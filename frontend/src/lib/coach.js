@@ -18,12 +18,15 @@ import { uid, todayISO, DAYN } from './format.js'
 import { mergePlan } from './plan-share.js'
 import { deleteRoutine } from './routines.js'
 import { POLICIES } from './progression.js'
+import { conflictFor } from './constraints.js'
 import { t, tn } from './i18n.js'
 
 // Bumping this re-prompts everyone: it means what we share, or who we share it with, changed.
 // 2: the training line names the session notes, which the payload carries and version 1 never
 // mentioned.
-export const CONSENT_VERSION = 2
+// 3: the payload now carries the active training constraints (S.constraints) as their own
+// disclosure category — an injury list is exactly the kind of thing consent must name.
+export const CONSENT_VERSION = 3
 
 // Bounds. The whole state has to stay inside the server's 5 MB body limit, and a Coach log
 // that grows forever is exactly the kind of thing that eats it invisibly. Worst case here is
@@ -72,6 +75,7 @@ export const CATEGORY_TEXT = {
   training: () => [t('Your logged training'), t('Sets you logged in the review window: weights, reps, times, effort ratings, how long sessions took, and your session notes.')],
   bodyweight: () => [t('Body weight'), t('Weigh-ins from the same window, and your goal weight if you set one.')],
   profile: () => [t('What you tell the Coach'), t('Your intake answers, including any limitations or injuries you describe.')],
+  constraints: () => [t('Your training constraints'), t('The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.')],
   prefs: () => [t('A few preferences'), t('Your unit, your language and which effort scale you log.')]
 }
 export const hasConsent = S => !!S?.coach?.consent?.agreedAt && S.coach.consent.version === CONSENT_VERSION
@@ -542,6 +546,26 @@ export const CHANGE_TYPES = Object.keys(CHANGE_APPLY)
 function findExIn(s, c) { return findEx(findRoutine(s, c.target.routineId), c.target.exId) }
 function need(x) { if (!x) throw new Error('missing target'); return x }
 
+/* The exercises a change would introduce into the plan — the only ones the constraint engine
+ * gets a say over, because a reorder or a prescription change touches nothing the person is not
+ * already training. This is the client half of the gate the server runs in
+ * api/coach/core/validate.js (a pure twin of lib/constraints.js): the server refuses a blocked
+ * or flagged exercise before a proposal is ever shown, and this catches whatever got past it —
+ * a phone running its own local pipeline, an older server, or a constraint added since the job
+ * ran. 'uncertain' passes on both sides, same as it does there. */
+const INTRODUCES = {
+  'add-exercise': c => [c.after?.id],
+  'swap-exercise': c => [c.after?.id],
+  'add-routine': c => (Array.isArray(c.after?.ex) ? c.after.ex : []).map(e => e && e.id)
+}
+
+// The worst verdict among the exercises a change introduces, or null. EXIDX is the same index
+// the constraint engine's own screens read, so a custom exercise resolves to nothing here and
+// only an explicit id can still block it — exactly the resolution the server had.
+const constraintBlock = (s, c) => (INTRODUCES[c.type] ? INTRODUCES[c.type](c) : [])
+  .map(id => (id != null ? conflictFor(id, s.constraints?.items, EXIDX) : null))
+  .find(v => v && v.level !== 'uncertain') || null
+
 /**
  * Apply the accepted subset, atomically (FR-30).
  *
@@ -556,25 +580,58 @@ export function applyChangeSet(s, proposal, acceptedIds) {
   const changes = (proposal.changes || []).filter(c => accepted.has(c.id) && c.status !== 'stale')
   if (!changes.length) return { applied: 0 }
 
+  // Sorted before the snapshot: a change set that turns out to be entirely blocked changes
+  // nothing, and must not leave a revert point (or a log entry) for an apply that never was.
+  const blocked = []
+  const run = []
+  for (const c of changes) {
+    const verdict = constraintBlock(s, c)
+    if (verdict) blocked.push({ c, verdict })
+    else run.push(c)
+  }
+  if (!run.length) {
+    noticeBlocked(s, blocked)
+    return { applied: 0 }
+  }
+
   pushSnapshot(s, proposal.id, t('Before the Coach’s changes'))
   const applied = []
-  for (const c of changes) {
+  for (const c of run) {
     CHANGE_APPLY[c.type](s, c)
     applied.push(decisionOf(c, 'accepted'))
   }
   // Turned-down changes keep their before/after too: the chat shows the whole proposal back
-  // later, and "you declined something about sets" is not a memory anyone can use.
+  // later, and "you declined something about sets" is not a memory anyone can use. A blocked
+  // change keeps its constraint label for the same reason.
   const rejected = (proposal.changes || [])
     .filter(c => !accepted.has(c.id))
     .map(c => decisionOf(c, c.status === 'stale' ? 'stale' : 'rejected'))
+  const blockedDecisions = blocked.map(({ c, verdict }) => ({ ...decisionOf(c, 'blocked'), constraint: verdict.constraintLabel }))
+  noticeBlocked(s, blocked)
 
   const logId = appendLog(s, {
     kind: 'review', at: Date.now(), proposalId: proposal.id,
     summary: proposal.summary || '', evidence: proposal.evidence || null,
-    notes: proposal.notes || [], decisions: [...applied, ...rejected]
+    notes: proposal.notes || [], decisions: [...applied, ...blockedDecisions, ...rejected]
   })
   coachOf(s).lastReview = { at: Date.now() }
-  return { applied: applied.length, rejected: rejected.length, logId }
+  return { applied: applied.length, rejected: rejected.length, logId, ...(blocked.length ? { blocked: blocked.length } : {}) }
+}
+
+/** One Coach line in the chat naming what was held back and why — a skipped change the person
+ *  ticked must never look like it was applied, or like it vanished. Plain t() forms rather than
+ *  tn(): the names carry the count, and a plural key would demand forms in every pack. */
+function noticeBlocked(s, blocked) {
+  if (!blocked.length) return
+  const names = [...new Set(blocked.flatMap(({ c }) => {
+    const ids = INTRODUCES[c.type] ? INTRODUCES[c.type](c) : []
+    return ids.map(id => (id != null ? exName(id) : '')).filter(Boolean)
+  }))]
+  const labels = [...new Set(blocked.map(({ verdict }) => verdict.constraintLabel).filter(Boolean))]
+  const text = blocked.length === 1
+    ? t('Skipped {0}: your training constraint “{1}” rules it out.', names.join(', '), labels.join('”, “'))
+    : t('Skipped {0}: your active training constraints rule them out.', names.join(', '))
+  appendChat(s, { role: 'coach', kind: 'text', text })
 }
 
 /** Turned down whole, or expired: recorded so a later review knows not to re-propose it. */

@@ -2351,5 +2351,10 @@ export default {
   'Voice recognition is unavailable right now.': 'La reconnaissance vocale n’est pas disponible pour le moment.',
   'Nothing left to log': 'Plus rien à enregistrer',
   'Nothing left to tick': 'Plus rien à cocher',
-  '{0} reps': '{0} répétitions'
+  '{0} reps': '{0} répétitions',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': 'Tes contraintes d’entraînement',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': 'Les blessures et limites que tu as marquées comme actives : comment chacune s’appelle, les parties du corps, muscles et exercices qu’elle nomme, et qui l’a enregistrée. Leurs notes ne quittent jamais cet appareil.',
+  'Skipped {0}: your active training constraints rule them out.': '{0} ignoré : tes contraintes d’entraînement actives l’excluent.',
+  'Skipped {0}: your training constraint “{1}” rules it out.': '{0} ignoré : ta contrainte d’entraînement « {1} » l’exclut.'
 }

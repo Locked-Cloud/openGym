@@ -2351,5 +2351,10 @@ export default {
   'Voice recognition is unavailable right now.': '음성 인식을 지금 사용할 수 없습니다.',
   'Nothing left to log': '기록할 것이 없습니다',
   'Nothing left to tick': '체크할 것이 없습니다',
-  '{0} reps': '{0}회'
+  '{0} reps': '{0}회',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': '내 훈련 제약',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': '활성으로 표시한 부상과 제약: 각각의 이름, 언급되는 신체 부위·근육·운동, 기록한 사람. 메모는 이 기기를 절대 벗어나지 않습니다.',
+  'Skipped {0}: your active training constraints rule them out.': '{0} 건너뜀: 활성 훈련 제약으로 제외되었습니다.',
+  'Skipped {0}: your training constraint “{1}” rules it out.': '{0} 건너뜀: “{1}” 훈련 제약으로 제외되었습니다.'
 }

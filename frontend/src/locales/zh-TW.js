@@ -2344,5 +2344,10 @@ export default {
   'Voice recognition is unavailable right now.': '語音辨識目前無法使用。',
   'Nothing left to log': '沒有可記錄的內容',
   'Nothing left to tick': '沒有可勾選的內容',
-  '{0} reps': '{0} 下'
+  '{0} reps': '{0} 下',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': '你的訓練限制',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': '你標示為啟用的傷害和限制：各自的名稱、涉及的身體部位、肌肉和動作，以及記錄者。它們的備註永不離開此裝置。',
+  'Skipped {0}: your active training constraints rule them out.': '已略過 {0}：你啟用的訓練限制排除了它。',
+  'Skipped {0}: your training constraint “{1}” rules it out.': '已略過 {0}：你的訓練限制「{1}」排除了它。'
 }

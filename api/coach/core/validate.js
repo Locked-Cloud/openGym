@@ -14,7 +14,8 @@
  * model verbatim for the one repair round (FR-48) — and a list of six problems produces a
  * better second attempt than the first of them does.
  */
-import { libraryHas, libraryName, equipmentAllows } from './library.js';
+import { LIB_BY_ID, libraryHas, libraryName, equipmentAllows } from './library.js';
+import { conflictFor } from './constraints.js';
 
 // A catalogue exercise the person's equipment does not reach, and that was not in the library
 // slice they were offered (which already pins what they train). The prompt says "their
@@ -24,6 +25,23 @@ const offEquipment = (ctx, id) => !!ctx.equipment?.length && libraryHas(id)
   && !(ctx.offered && ctx.offered.has(id)) && !equipmentAllows(ctx.equipment, id);
 const OFF_EQUIPMENT = (where, id) => `${where} "${id}" needs equipment the user does not have — use an exercise from the library provided in the payload`;
 import { glyphStr } from './glyphs.js';
+
+/* The user's active training constraints (ctx.constraints, the same bounded list the payload
+ * carries), checked wherever a proposal introduces an exercise into the plan: a created plan's
+ * own exercises, an add-exercise, a swap-exercise, and a new routine's exercises. Reorder and
+ * the prescription types never introduce anything, so they are not checked. 'blocked' (the
+ * constraint lists the id) and 'flagged' (body part or primary muscle overlap) are refused —
+ * the repair round is told the exercise and the constraint's label. 'uncertain' (only a
+ * secondary muscle overlaps) passes: the app renders that as "ask a professional", not as a
+ * green light, and there is no assumptions/uncertainty list on a proposal to append it to.
+ * This is the server half of the same rule the client applies in coach.js's applyChangeSet. */
+const constraintHit = (ctx, id) => {
+  const v = conflictFor(id, ctx.constraints || [], LIB_BY_ID);
+  return v && v.level !== 'uncertain' ? v : null;
+};
+const CONSTRAINT_HIT = (where, id, v) =>
+  `${where} "${id}"${libraryName(id) ? ` (${libraryName(id)})` : ''} is ruled out by the user's constraint "${v.constraintLabel}" `
+  + `— an exercise their active constraints ${v.level === 'blocked' ? 'name outright' : 'reach by body part or muscle'} must never enter the plan. Pick a different one`;
 
 // The closed list (FR-23 / C3). Adding a member here is a deliberate act with an apply
 // implementation on the client to match; there is no default case anywhere.
@@ -124,6 +142,9 @@ export function validatePlan(data, ctx = {}) {
         return;
       }
       if (offEquipment(ctx, e.id)) { errors.push(OFF_EQUIPMENT(`${where}.id`, e.id)); return; }
+      // A created plan introduces every exercise it names, so each one faces the constraints.
+      const planClash = constraintHit(ctx, e.id);
+      if (planClash) { errors.push(CONSTRAINT_HIT(`${where}.id`, e.id, planClash)); return; }
       const clean = { id: e.id, sets: isInt(e.sets, 1, 10) ? e.sets : 3 };
       const mode = MODES.includes(e.mode) ? e.mode : 'reps';
       const perSide = !!e.side;
@@ -336,6 +357,8 @@ export function validateReview(data, plan, ctx = {}) {
         const a = c.after || {};
         if (!isStr(a.id) || !knownEx(a.id)) { errors.push(`${where}.after.id must be an exercise id from the library`); return; }
         if (offEquipment(ctx, a.id)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, a.id)); return; }
+        const addClash = constraintHit(ctx, a.id);
+        if (addClash) { errors.push(CONSTRAINT_HIT(`${where}.after.id`, a.id, addClash)); return; }
         const perSide = !!a.side;
         if (perSide && isInt(a.reps, 1, 100) && a.reps % 2) { errors.push(ODD_PER_SIDE(`${where}.after.reps`)); return; }
         if (isInt(a.repsMax, 1, 100) && isInt(a.repsMin, 1, 100) && a.repsMax < a.repsMin) { errors.push(INVERTED_RANGE(`${where}.after`)); return; }
@@ -365,6 +388,8 @@ export function validateReview(data, plan, ctx = {}) {
         const a = c.after || {};
         if (!isStr(a.id) || !knownEx(a.id)) { errors.push(`${where}.after.id must be an exercise id from the library`); return; }
         if (offEquipment(ctx, a.id)) { errors.push(OFF_EQUIPMENT(`${where}.after.id`, a.id)); return; }
+        const swapClash = constraintHit(ctx, a.id);
+        if (swapClash) { errors.push(CONSTRAINT_HIT(`${where}.after.id`, a.id, swapClash)); return; }
         if (a.id === target.exId) { errors.push(`${where} swaps an exercise for itself`); return; }
         out.after = {
           id: a.id, name: libraryName(a.id),
@@ -441,6 +466,8 @@ export function validateReview(data, plan, ctx = {}) {
         if (bad) { errors.push(`${where}.after.ex "${bad.id}" is not in the exercise library — use an id from the library provided in the payload`); return; }
         const offEq = listed.find(e => offEquipment(ctx, e.id));
         if (offEq) { errors.push(OFF_EQUIPMENT(`${where}.after.ex`, offEq.id)); return; }
+        const clashPair = listed.map(e => [e, constraintHit(ctx, e.id)]).find(([, v]) => v);
+        if (clashPair) { errors.push(CONSTRAINT_HIT(`${where}.after.ex`, clashPair[0].id, clashPair[1])); return; }
         const ex = listed.slice(0, MAX_EX_PER_ROUTINE);
         if (!ex.length) { errors.push(`${where}.after.ex must list at least one exercise from the library`); return; }
         const odd = ex.find(e => e.side && isInt(e.reps, 1, 100) && e.reps % 2);

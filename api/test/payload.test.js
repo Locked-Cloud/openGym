@@ -428,3 +428,48 @@ test('the app\'s active equipment profile stands in when the Coach was told no e
   S.coach.profile.equipment = ['barbell'];
   assert.deepEqual(payload.build(S, { handle: handleFor('u1'), kind: 'create' }).coachProfile.equipment, ['barbell']);
 });
+
+/* The active training constraints (S.constraints.items, lib/constraints.js) ride on a create
+ * and a review as their own bounded category — five fields per item, the ones a proposal has to
+ * avoid naming. The note, the dates and requiresReview are the person's private injury story:
+ * the model needs the overlap, not the words, so they never leave. A resolved constraint is
+ * history and does not travel either; a debrief changes nothing and names no ids, so it gets
+ * no constraints at all. */
+test('active constraints ride a create and a review as five bounded fields, never their notes', () => {
+  const S = sampleState();
+  S.constraints = { items: [
+    { id: 'c1', label: 'Left knee', bodyParts: ['upper legs'], muscles: ['quads'], exerciseIds: ['3593'], status: 'active', source: 'professional', startedOn: '2026-09-01', resolvedOn: null, requiresReview: true, note: 'private words about the knee' },
+    { id: 'c2', label: 'Old shoulder', bodyParts: ['shoulders'], muscles: [], exerciseIds: [], status: 'resolved', source: 'self', resolvedOn: '2026-08-01', note: 'resolved, and still nobody\'s business' }
+  ] };
+  for (const kind of ['create', 'review']) {
+    const p = payload.build(S, { handle: handleFor('u1'), kind });
+    assert.deepEqual(p.constraints, [{ label: 'Left knee', bodyParts: ['upper legs'], muscles: ['quads'], exerciseIds: ['3593'], source: 'professional' }], kind);
+    const json = JSON.stringify(p);
+    for (const leak of ['private words about the knee', 'resolved, and still nobody', 'startedOn', 'resolvedOn', 'requiresReview', '"note"', 'Old shoulder', '"c1"', '"c2"']) {
+      assert.ok(!json.includes(leak), `${kind} payload leaked ${leak}`);
+    }
+  }
+  const d = payload.build(S, { handle: handleFor('u1'), kind: 'debrief', workoutId: 'w1' });
+  assert.equal('constraints' in d, false, 'a debrief names no exercises and changes nothing');
+  assert.equal('constraints' in payload.build(sampleState(), { handle: handleFor('u1'), kind: 'review' }), false, 'no constraints, no category');
+});
+
+test('constraint fields are bounded like every other payload field, since the state is the client\'s', () => {
+  const S = sampleState();
+  S.constraints = { items: [{
+    label: 'x'.repeat(500), bodyParts: Array.from({ length: 60 }, (_, i) => 'bp' + i + 'y'.repeat(100)),
+    muscles: Array.from({ length: 60 }, (_, i) => 'm' + i + 'y'.repeat(100)),
+    exerciseIds: Array.from({ length: 60 }, (_, i) => 'e' + i + 'z'.repeat(100)),
+    status: 'active', source: 'made-up-source'
+  }] };
+  const p = payload.build(S, { handle: handleFor('u1'), kind: 'create' });
+  assert.ok(JSON.stringify(p).length < 100_000, 'the payload stays small');
+  const [c] = p.constraints;
+  assert.equal(c.label.length, 80);
+  assert.equal(c.bodyParts.length, 12);
+  assert.equal(c.muscles.length, 12);
+  assert.equal(c.exerciseIds.length, 24);
+  assert.ok(c.bodyParts.every(x => x.length <= 40) && c.muscles.every(x => x.length <= 40));
+  assert.ok(c.exerciseIds.every(x => x.length <= 64));
+  assert.equal(c.source, 'self', 'an invented source reads as the person\'s own');
+});

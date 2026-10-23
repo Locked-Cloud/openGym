@@ -2461,13 +2461,13 @@ paths:
                   providerLabel: { type: string }
                   categories:
                     type: array
-                    items: { type: string, enum: [plan, training, bodyweight, profile, prefs] }
+                    items: { type: string, enum: [plan, training, bodyweight, profile, constraints, prefs] }
                     description: The data categories a job may send. Nothing else ever is.
                   version: { type: integer, description: Disclosure version the consent is recorded against. }
               example:
                 provider: anthropic
                 providerLabel: Claude
-                categories: [plan, training, bodyweight, profile, prefs]
+                categories: [plan, training, bodyweight, profile, constraints, prefs]
                 version: 1
         '401': { $ref: '#/components/responses/Unauthorized' }
 

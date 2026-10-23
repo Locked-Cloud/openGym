@@ -1512,7 +1512,12 @@ export const PT_BR_OVERRIDES = {
   'Voice recognition is unavailable right now.': 'O reconhecimento de voz não está disponível agora.',
   'Nothing left to log': 'Nada mais para registrar',
   'Nothing left to tick': 'Nada mais para marcar',
-  '{0} reps': '{0} repetições'
+  '{0} reps': '{0} repetições',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': 'Suas restrições de treino',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': 'As lesões e limitações que você marcou como ativas: o nome de cada uma, as partes do corpo, músculos e exercícios que ela menciona e quem a registrou. As notas delas nunca saem deste dispositivo.',
+  'Skipped {0}: your active training constraints rule them out.': '{0} ignorado: suas restrições de treino ativas o excluem.',
+  'Skipped {0}: your training constraint “{1}” rules it out.': '{0} ignorado: sua restrição de treino “{1}” o exclui.'
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

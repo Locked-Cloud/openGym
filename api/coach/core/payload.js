@@ -12,6 +12,7 @@
  */
 import { glyphStr } from './glyphs.js';
 import { LIBRARY, LIB_BY_ID, libraryHas, libraryName, librarySlice, isStretch, MAX_LIBRARY } from './library.js';
+import { cleanConstraints } from './constraints.js';
 
 export const CONTRACT = 1;
 // Bounds from FR-22. A review reads a training block, not a training career: more history
@@ -514,6 +515,16 @@ export function build(S, opts = {}) {
     .flatMap(e => (e.decisions || []).filter(d => d.status === 'rejected').map(d => ({ type: word(d.type, PROFILE_WORD_MAX), why: text(d.why, PROFILE_TEXT_MAX.notes) })))
     .slice(-15);
   if (declined.length) p.previouslyDeclined = declined;
+
+  // The active training constraints (frontend/src/lib/constraints.js, S.constraints.items), as
+  // the bounded five-field copy cleanConstraints builds — no note, no dates, nothing but what a
+  // proposal has to avoid naming. Only where a proposal can name an exercise at all: a create
+  // and a review; a debrief reads one session and changes nothing. Tiny either way, and every
+  // field is bounded in the twin, so this adds nothing the 300k backstop needs to think about.
+  if (opts.kind !== 'debrief') {
+    const constraints = cleanConstraints(S.constraints?.items != null ? S.constraints.items : S.constraints);
+    if (constraints.length) p.constraints = constraints;
+  }
 
   if (opts.kind === 'debrief') {
     // One session, read closely: the workout itself, the last few times the same routine was

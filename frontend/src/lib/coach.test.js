@@ -7,6 +7,7 @@ import {
   CHANGE_TYPES, SNAPSHOT_MAX, LOG_MAX, CONSENT_VERSION
 } from './coach.js'
 import { registerCustom } from './exercises.js'
+import { addConstraint, resolveConstraint } from './constraints.js'
 
 // The two runtimes share no build step, so the client's copy of the fingerprint logic is
 // checked against the server's actual source rather than against a transcribed expectation.
@@ -694,5 +695,77 @@ describe('what the log keeps, so a decision never makes a proposal vanish', () =
     expect(b.basedOn).toBeUndefined()
     expect(Object.keys(b.routines[0].ex[0])).not.toContain('secret')
     expect(lightBundle(null)).toBeNull()
+  })
+})
+
+/* ---------------------------------- constraints ---------------------------------- */
+/* The client half of the constraint gate (the server's is api/coach/core/validate.js): a
+   change that adds or swaps in an exercise the active constraints block or flag is skipped with
+   a chat notice, not applied; an uncertain verdict passes, same as on the server. 0003 is the
+   air bike (waist), 0002 the side bend (waist, secondary obliques), 0009 a chest dip. */
+describe('the constraint gate on apply', () => {
+  const withItems = items => ({ constraints: { items } })
+  const blocked = addConstraint([], { id: 'c1', label: 'Waist off', bodyParts: ['upper legs', 'waist'] })
+
+  it('skips an add-exercise the constraints flag, and says so in the chat', () => {
+    const s = JSON.parse(JSON.stringify(state(withItems(blocked))))
+    const p = proposal([change({ id: 'c1', type: 'add-exercise', target: { routineId: 'r1' }, after: { id: '0003', sets: 3, reps: 10 } })])
+    const res = applyChangeSet(s, p, ['c1'])
+    expect(res).toEqual({ applied: 0 })
+    expect(s.routines[0].ex).toHaveLength(3)
+    expect(canRevert(s)).toBe(false)
+    const last = s.coach.chat.at(-1)
+    expect(last.role).toBe('coach')
+    expect(last.text).toContain('air bike')
+    expect(last.text).toContain('Waist off')
+  })
+
+  it('applies the rest beside a blocked change and records the blocked one with its constraint', () => {
+    const s = JSON.parse(JSON.stringify(state(withItems(blocked))))
+    const p = proposal([
+      change({ id: 'c1', type: 'sets', after: 4 }),
+      change({ id: 'c2', type: 'add-exercise', target: { routineId: 'r1' }, after: { id: '0003', sets: 3, reps: 10 } })
+    ])
+    const res = applyChangeSet(s, p, ['c1', 'c2'])
+    expect(res).toMatchObject({ applied: 1, blocked: 1 })
+    expect(s.routines[0].ex[0].sets).toBe(4)
+    expect(s.routines[0].ex).toHaveLength(3)
+    const decisions = logEntry(s, res.logId).decisions
+    expect(decisions.find(d => d.id === 'c2')).toMatchObject({ status: 'blocked', constraint: 'Waist off' })
+    expect(s.coach.chat.at(-1).text).toContain('air bike')
+  })
+
+  it('blocks an explicit id outright, on a swap and on a whole added routine', () => {
+    const items = addConstraint(blocked, { id: 'c2', label: 'No dips', exerciseIds: ['0009'] })
+    const s = JSON.parse(JSON.stringify(state(withItems(items))))
+    const swap = proposal([change({ type: 'swap-exercise', target: { routineId: 'r1', exId: '0001' }, after: { id: '0009' } })])
+    expect(applyChangeSet(s, swap, ['c1'])).toEqual({ applied: 0 })
+    expect(s.routines[0].ex[0].id).toBe('0001')
+    const s2 = JSON.parse(JSON.stringify(state(withItems(items))))
+    const routine = proposal([change({ id: 'c9', type: 'add-routine', target: {}, after: { name: 'C', ex: [{ id: '0009', sets: 3, reps: 10 }] } })])
+    expect(applyChangeSet(s2, routine, ['c9'])).toEqual({ applied: 0 })
+    expect(s2.routines).toHaveLength(2)
+  })
+
+  it('lets an uncertain verdict through, like the server does', () => {
+    // 1274 (deep push up) names shoulders only as a secondary muscle: that is the app's
+    // "ask a professional" case, not a refusal.
+    const items = addConstraint([], { id: 'c1', label: 'Shoulders', muscles: ['shoulders'] })
+    const s = JSON.parse(JSON.stringify(state(withItems(items))))
+    const p = proposal([change({ type: 'add-exercise', target: { routineId: 'r1' }, after: { id: '1274', sets: 3, reps: 12 } })])
+    const res = applyChangeSet(s, p, ['c1'])
+    expect(res.applied).toBe(1)
+    expect(s.routines[0].ex).toHaveLength(4)
+    expect(s.routines[0].ex.at(-1).id).toBe('1274')
+    expect((s.coach.chat || []).filter(m => m.text && m.text.includes('Skipped'))).toHaveLength(0)
+  })
+
+  it('never looks at constraints that are resolved, and nothing changes without them', () => {
+    const items = resolveConstraint(blocked, 'c1', '2026-09-01')
+    const s = JSON.parse(JSON.stringify(state(withItems(items))))
+    const p = proposal([change({ type: 'add-exercise', target: { routineId: 'r1' }, after: { id: '0003', sets: 3, reps: 10 } })])
+    expect(applyChangeSet(s, p, ['c1']).applied).toBe(1)
+    const bare = JSON.parse(JSON.stringify(state()))
+    expect(applyChangeSet(bare, p, ['c1']).applied).toBe(1)
   })
 })

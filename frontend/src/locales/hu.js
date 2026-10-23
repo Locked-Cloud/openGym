@@ -2354,5 +2354,10 @@ export default {
   'Voice recognition is unavailable right now.': 'A beszédfelismerés most nem érhető el.',
   'Nothing left to log': 'Nincs több rögzítenivaló',
   'Nothing left to tick': 'Nincs több kipipálnivaló',
-  '{0} reps': '{0} ismétlés'
+  '{0} reps': '{0} ismétlés',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': 'Az edzéskorlátjaid',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': 'A sérülések és korlátok, amelyeket aktívként jelöltél: minek hívják őket, mely testrészeket, izmokat és gyakorlatokat nevez meg, és ki rögzítette. A jegyzeteik sosem hagyják el ezt az eszközt.',
+  'Skipped {0}: your active training constraints rule them out.': '{0} kihagyva: az aktív edzéskorlátaid kizárják.',
+  'Skipped {0}: your training constraint “{1}” rules it out.': '{0} kihagyva: a(z) „{1}” edzéskorlátod kizárja.'
 }

@@ -2362,5 +2362,10 @@ export default {
   'Voice recognition is unavailable right now.': 'การจำแนกเสียงใช้ไม่ได้ในตอนนี้',
   'Nothing left to log': 'ไม่มีอะไรให้บันทึกแล้ว',
   'Nothing left to tick': 'ไม่มีอะไรให้ทำเครื่องหมายแล้ว',
-  '{0} reps': '{0} ครั้ง'
+  '{0} reps': '{0} ครั้ง',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': 'ข้อจำกัดการฝึกของคุณ',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': 'อาการบาดเจ็บและข้อจำกัดที่คุณทำเครื่องหมายว่าใช้งานอยู่: ชื่อของแต่ละอย่าง ส่วนของร่างกาย กล้ามเนื้อและท่าที่ระบุ และใครเป็นคนบันทึก โน้ตของพวกมันไม่ออกจากเครื่องนี้',
+  'Skipped {0}: your active training constraints rule them out.': 'ข้าม {0}: ข้อจำกัดการฝึกที่ใช้งานอยู่ของคุณตัดมันออก',
+  'Skipped {0}: your training constraint “{1}” rules it out.': 'ข้าม {0}: ข้อจำกัดการฝึก “{1}” ของคุณตัดมันออก'
 }

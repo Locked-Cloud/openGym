@@ -2351,5 +2351,10 @@ export default {
   'Voice recognition is unavailable right now.': 'Konuşma tanıma şu anda kullanılamıyor.',
   'Nothing left to log': 'Kaydedecek bir şey kalmadı',
   'Nothing left to tick': 'İşaretleyecek bir şey kalmadı',
-  '{0} reps': '{0} tekrar'
+  '{0} reps': '{0} tekrar',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': 'Antrenman kısıtlamaların',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': 'Aktif olarak işaretlediğin sakatlık ve kısıtlar: her birinin adı, adı geçen vücut bölgeleri, kaslar ve egzersizler ve onu kaydeden. Notları bu cihazdan asla çıkmaz.',
+  'Skipped {0}: your active training constraints rule them out.': '{0} atlandı: aktif antrenman kısıtlamaların onları eler.',
+  'Skipped {0}: your training constraint “{1}” rules it out.': '{0} atlandı: “{1}” antrenman kısıtlaman onu eler.'
 }

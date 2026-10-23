@@ -2406,5 +2406,10 @@ export default {
   'Voice recognition is unavailable right now.': 'التعرف على الصوت غير متاح الآن.',
   'Nothing left to log': 'لا يوجد ما يمكن تسجيله',
   'Nothing left to tick': 'لا يوجد ما يمكن تحديده',
-  '{0} reps': '{0} تكرارات'
+  '{0} reps': '{0} تكرارات',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': 'قيودك التدريبية',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': 'الإصابات والقيود التي علّمتها كنشطة: اسم كل منها، وأجزاء الجسم والعضلات والتمارين التي يذكرها، ومن سجّلها. ملاحظاتها لا تترك هذا الجهاز أبدًا.',
+  'Skipped {0}: your active training constraints rule them out.': 'تم تجاوز {0}: قيودك التدريبية النشطة تستبعده.',
+  'Skipped {0}: your training constraint “{1}” rules it out.': 'تم تجاوز {0}: قيدك التدريبي «{1}» يستبعده.'
 }

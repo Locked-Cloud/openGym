@@ -2430,5 +2430,10 @@ export default {
   'Voice recognition is unavailable right now.': 'ভয়েস রিকগনিশন এখন পাওয়া যাচ্ছে না।',
   'Nothing left to log': 'লগ করার আর কিছু নেই',
   'Nothing left to tick': 'টিক দেওয়ার আর কিছু নেই',
-  '{0} reps': '{0} রেপ'
+  '{0} reps': '{0} রেপ',
+  // --- coach constraints (lib/coach.js) ---,
+  'Your training constraints': 'আপনার ট্রেনিং সীমাবদ্ধতা',
+  'The injuries and limitations you marked as active: what each is called, the body parts, muscles and exercises it names, and who recorded it. Their notes never leave this device.': 'সক্রিয় হিসেবে চিহ্নিত আঘাত আর সীমাবদ্ধতা: প্রতিটির নাম, উল্লেখ করা শরীরের অংশ, পেশি ও ব্যায়াম, আর কে রেকর্ড করেছে। এগুলোর নোট কখনোই এই ডিভাইস ছাড়ে না।',
+  'Skipped {0}: your active training constraints rule them out.': '{0} বাদ দেওয়া হয়েছে: আপনার সক্রিয় ট্রেনিং সীমাবদ্ধতা এগুলো বাদ দেয়।',
+  'Skipped {0}: your training constraint “{1}” rules it out.': '{0} বাদ দেওয়া হয়েছে: আপনার “{1}” ট্রেনিং সীমাবদ্ধতা এটি বাদ দেয়।'
 }
