@@ -2382,5 +2382,12 @@ export default {
   'Save night': 'Geceyi kaydet',
   'Enter how long you slept': 'Ne kadar uyuduğunu gir',
   'A night cannot be longer than a day.': 'Bir gece bir günden uzun olamaz.',
-  'Night saved': 'Gece kaydedildi'
+  'Night saved': 'Gece kaydedildi',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Ön görünüm',
+  'Back view': 'Arka görünüm',
+  'Search muscles…': 'Kas ara…',
+  'Hard sets': 'Ağır setler',
+  'Best exercise': 'En iyi egzersiz',
+  'Top exercises': 'Öne çıkan egzersizler'
 }

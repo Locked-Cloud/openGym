@@ -1543,7 +1543,14 @@ export const PT_BR_OVERRIDES = {
   'Save night': 'Salvar noite',
   'Enter how long you slept': 'Informe quanto tempo você dormiu',
   'A night cannot be longer than a day.': 'Uma noite não pode ser mais longa que um dia.',
-  'Night saved': 'Noite salva'
+  'Night saved': 'Noite salva',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Vista frontal',
+  'Back view': 'Vista de costas',
+  'Search muscles…': 'Pesquisar músculos…',
+  'Hard sets': 'Séries pesadas',
+  'Best exercise': 'Melhor exercício',
+  'Top exercises': 'Principais exercícios'
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

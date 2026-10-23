@@ -2382,5 +2382,12 @@ export default {
   'Save night': 'रात सेव करें',
   'Enter how long you slept': 'बताएं आप कितनी देर सोए',
   'A night cannot be longer than a day.': 'एक रात एक दिन से लंबी नहीं हो सकती।',
-  'Night saved': 'रात सेव हो गई'
+  'Night saved': 'रात सेव हो गई',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'अगला दृश्य',
+  'Back view': 'पिछला दृश्य',
+  'Search muscles…': 'मांसपेशियाँ खोजें…',
+  'Hard sets': 'हार्ड सेट',
+  'Best exercise': 'सर्वश्रेष्ठ व्यायाम',
+  'Top exercises': 'प्रमुख व्यायाम'
 }

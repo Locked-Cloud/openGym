@@ -2382,5 +2382,12 @@ export default {
   'Save night': '밤 저장',
   'Enter how long you slept': '얼마나 잤는지 입력하세요',
   'A night cannot be longer than a day.': '하루보다 긴 밤은 있을 수 없습니다.',
-  'Night saved': '밤 저장됨'
+  'Night saved': '밤 저장됨',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': '정면',
+  'Back view': '후면',
+  'Search muscles…': '근육 검색…',
+  'Hard sets': '하드 세트',
+  'Best exercise': '최고의 운동',
+  'Top exercises': '주요 운동'
 }

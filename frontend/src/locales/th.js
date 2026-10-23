@@ -2393,5 +2393,12 @@ export default {
   'Save night': 'บันทึกคืน',
   'Enter how long you slept': 'กรอกว่านอนนานเท่าไหร่',
   'A night cannot be longer than a day.': 'คืนหนึ่งไม่อาจยาวกว่าหนึ่งวันได้',
-  'Night saved': 'บันทึกคืนแล้ว'
+  'Night saved': 'บันทึกคืนแล้ว',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'มุมมองด้านหน้า',
+  'Back view': 'มุมมองด้านหลัง',
+  'Search muscles…': 'ค้นหากล้ามเนื้อ…',
+  'Hard sets': 'เซตหนัก',
+  'Best exercise': 'ท่าที่ดีที่สุด',
+  'Top exercises': 'ท่าหลัก'
 }

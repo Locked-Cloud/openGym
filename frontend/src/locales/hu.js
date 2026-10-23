@@ -2385,5 +2385,12 @@ export default {
   'Save night': 'Éjszaka mentése',
   'Enter how long you slept': 'Add meg, mennyit aludtál',
   'A night cannot be longer than a day.': 'Egy éjszaka nem lehet hosszabb egy napnál.',
-  'Night saved': 'Éjszaka elmentve'
+  'Night saved': 'Éjszaka elmentve',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Elülső nézet',
+  'Back view': 'Hátsó nézet',
+  'Search muscles…': 'Izom keresése…',
+  'Hard sets': 'Kemény szettek',
+  'Best exercise': 'Legjobb gyakorlat',
+  'Top exercises': 'Top gyakorlatok'
 }

@@ -75,7 +75,8 @@ describe('lists load their next page as you scroll', () => {
   it('muscle explorer: the results of a muscle load on too', () => {
     const host = render(<MuscleExplorer onDetail={vi.fn()} onPlan={vi.fn()} />)
     // the muscle with the most exercises, so there is a second page to load
-    const chips = [...host.querySelectorAll('.chip[aria-pressed]')]
+    // (.chips scopes to the muscle row: the fatigue toggle is also a pressed chip, without a count)
+    const chips = [...host.querySelectorAll('.chips .chip[aria-pressed]')]
     const biggest = chips.reduce((a, b) => (+b.querySelector('.dim').textContent > +a.querySelector('.dim').textContent ? b : a))
     act(() => biggest.click())
     const before = host.querySelectorAll('.list > .item').length

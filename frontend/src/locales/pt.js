@@ -2382,5 +2382,12 @@ export default {
   'Save night': 'Guardar noite',
   'Enter how long you slept': 'Indica quanto tempo dormiste',
   'A night cannot be longer than a day.': 'Uma noite não pode ser mais longa do que um dia.',
-  'Night saved': 'Noite guardada'
+  'Night saved': 'Noite guardada',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Vista frontal',
+  'Back view': 'Vista posterior',
+  'Search muscles…': 'Procurar músculos…',
+  'Hard sets': 'Séries intensas',
+  'Best exercise': 'Melhor exercício',
+  'Top exercises': 'Exercícios principais'
 }

@@ -2382,5 +2382,12 @@ export default {
   'Save night': '保存夜晚',
   'Enter how long you slept': '请输入你睡了多久',
   'A night cannot be longer than a day.': '一夜不能超过一天。',
-  'Night saved': '夜晚已保存'
+  'Night saved': '夜晚已保存',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': '正面视图',
+  'Back view': '背面视图',
+  'Search muscles…': '搜索肌肉…',
+  'Hard sets': '高强度组',
+  'Best exercise': '最佳动作',
+  'Top exercises': '主要动作'
 }

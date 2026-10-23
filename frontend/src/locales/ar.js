@@ -2437,5 +2437,12 @@ export default {
   'Save night': 'حفظ الليلة',
   'Enter how long you slept': 'أدخل مدة نومك',
   'A night cannot be longer than a day.': 'لا يمكن أن تكون الليلة أطول من اليوم.',
-  'Night saved': 'حُفظت الليلة'
+  'Night saved': 'حُفظت الليلة',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'منظر أمامي',
+  'Back view': 'منظر خلفي',
+  'Search muscles…': 'البحث في العضلات…',
+  'Hard sets': 'مجموعات شاقة',
+  'Best exercise': 'أفضل تمرين',
+  'Top exercises': 'التمارين الرئيسية'
 }

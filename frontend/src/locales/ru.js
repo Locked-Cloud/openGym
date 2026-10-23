@@ -2386,5 +2386,12 @@ export default {
   'Save night': 'Сохранить ночь',
   'Enter how long you slept': 'Введите, сколько вы спали',
   'A night cannot be longer than a day.': 'Ночь не может быть длиннее дня.',
-  'Night saved': 'Ночь сохранена'
+  'Night saved': 'Ночь сохранена',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Вид спереди',
+  'Back view': 'Вид сзади',
+  'Search muscles…': 'Поиск мышц…',
+  'Hard sets': 'Тяжёлые подходы',
+  'Best exercise': 'Лучшее упражнение',
+  'Top exercises': 'Лучшие упражнения'
 }
