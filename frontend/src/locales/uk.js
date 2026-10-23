@@ -2372,7 +2372,7 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'Наскільки рівний у тебе сон на тлі тренувань: остання ніч проти твоїх власних останніх ночей. Це не вимірювання відновлення, і воно нічого не говорить про твоє здоров’я.',
   'Last {0} nights': 'Останні {0} ночей',
   'No nights yet. Add one below.': 'Ночей ще немає. Додай одну нижче.',
-  'Add a night\\u2019s sleep': 'Додати ніч сну',
+  'Add a night’s sleep': 'Додати ніч сну',
   'Woke up on': 'Дата пробудження',
   'How long': 'Скільки',
   'Hours': 'Години',

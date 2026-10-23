@@ -2375,7 +2375,7 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'Jak stabilny jest Twój sen na tle treningu: ostatnia noc wobec Twoich ostatnich nocy. To nie jest pomiar regeneracji i nic nie mówi o Twoim zdrowiu.',
   'Last {0} nights': 'Ostatnie {0} nocy',
   'No nights yet. Add one below.': 'Nie ma jeszcze nocy. Dodaj jedną poniżej.',
-  'Add a night\\u2019s sleep': 'Dodaj noc snu',
+  'Add a night’s sleep': 'Dodaj noc snu',
   'Woke up on': 'Dzień pobudki',
   'How long': 'Jak długo',
   'Hours': 'Godziny',

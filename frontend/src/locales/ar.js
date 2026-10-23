@@ -2430,7 +2430,7 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'مدى انتظام نومك مقابل تدريبك: الليلة الماضية مقارنة بلياليك الأخيرة نفسها. ليس قياسًا للتعافي ولا يقول أي شيء عن صحتك.',
   'Last {0} nights': 'آخر {0} ليالٍ',
   'No nights yet. Add one below.': 'لا ليالٍ بعد. أضف ليلة أدناه.',
-  'Add a night\\u2019s sleep': 'إضافة ليلة نوم',
+  'Add a night’s sleep': 'إضافة ليلة نوم',
   'Woke up on': 'تاريخ الاستيقاظ',
   'How long': 'المدة',
   'Hours': 'ساعات',

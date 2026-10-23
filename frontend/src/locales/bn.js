@@ -2454,7 +2454,7 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'আপনার ট্রেনিংয়ের পাশে ঘুম কতটা স্থির: গতকাল রাত বনাম আপনার নিজের সাম্প্রতিক রাতগুলো। এটি রিকভারি মাপ নয় এবং আপনার স্বাস্থ্য নিয়ে কিছু বলে না।',
   'Last {0} nights': 'শেষ {0} রাত',
   'No nights yet. Add one below.': 'এখনো কোনো রাত নেই। নিচে একটি যোগ করুন।',
-  'Add a night\\u2019s sleep': 'এক রাতের ঘুম যোগ করুন',
+  'Add a night’s sleep': 'এক রাতের ঘুম যোগ করুন',
   'Woke up on': 'জেগে উঠেছেন',
   'How long': 'কতক্ষণ',
   'Hours': 'ঘণ্টা',

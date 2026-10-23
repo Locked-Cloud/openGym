@@ -1536,7 +1536,7 @@ export const PT_BR_OVERRIDES = {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'A regularidade do seu sono, ao lado do treino: a última noite contra as suas próprias noites recentes. Não é uma medida de recuperação e não diz nada sobre a sua saúde.',
   'Last {0} nights': 'Últimas {0} noites',
   'No nights yet. Add one below.': 'Ainda não há noites. Adicione uma abaixo.',
-  'Add a night\\u2019s sleep': 'Adicionar uma noite de sono',
+  'Add a night’s sleep': 'Adicionar uma noite de sono',
   'Woke up on': 'Acordou em',
   'How long': 'Quanto tempo',
   'Hours': 'Horas',

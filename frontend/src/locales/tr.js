@@ -2375,7 +2375,7 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'Uykun antrenmanlarının yanında ne kadar düzenli: dün gece, kendi son gecelerine karşı. Bu bir toparlanma ölçümü değildir ve sağlığın hakkında bir şey söylemez.',
   'Last {0} nights': 'Son {0} gece',
   'No nights yet. Add one below.': 'Henüz gece yok. Aşağıdan bir tane ekle.',
-  'Add a night\\u2019s sleep': 'Bir gece uykusu ekle',
+  'Add a night’s sleep': 'Bir gece uykusu ekle',
   'Woke up on': 'Uyandığın gün',
   'How long': 'Ne kadar',
   'Hours': 'Saat',

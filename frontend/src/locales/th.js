@@ -2386,7 +2386,7 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'ความสม่ำเสมอของการนอนเทียบกับการฝึก: คืนก่อนเทียบกับหลายคืนล่าสุดของคุณเอง ไม่ใช่การวัดการฟื้นตัวและไม่ได้บอกอะไรเกี่ยวกับสุขภาพของคุณ',
   'Last {0} nights': '{0} คืนล่าสุด',
   'No nights yet. Add one below.': 'ยังไม่มีข้อมูลคืน เพิ่มได้ด้านล่าง',
-  'Add a night\\u2019s sleep': 'เพิ่มการนอนหนึ่งคืน',
+  'Add a night’s sleep': 'เพิ่มการนอนหนึ่งคืน',
   'Woke up on': 'ตื่นวันที่',
   'How long': 'นานแค่ไหน',
   'Hours': 'ชั่วโมง',

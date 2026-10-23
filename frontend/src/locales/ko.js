@@ -2375,7 +2375,7 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': '훈련 옆에서 보는 수면의 꾸준함: 어젯밤을 최근 자신의 밤들과 비교합니다. 회복 측정이 아니며 건강에 대해 아무것도 말해 주지 않습니다.',
   'Last {0} nights': '최근 {0}박',
   'No nights yet. Add one below.': '아직 밤이 없습니다. 아래에서 추가하세요.',
-  'Add a night\\u2019s sleep': '하룻밤 수면 추가',
+  'Add a night’s sleep': '하룻밤 수면 추가',
   'Woke up on': '깬 날짜',
   'How long': '수면 시간',
   'Hours': '시간',
