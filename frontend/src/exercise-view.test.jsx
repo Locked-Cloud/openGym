@@ -35,7 +35,8 @@ const toggle = host => host.querySelector('button[aria-label="Cards"]')
 // The button belongs to the search row, next to the field — never in a header (see the next test).
 const besideSearch = btn => btn.parentElement.classList.contains('search-row') && !!btn.parentElement.querySelector('.search input')
 const isCards = host => host.querySelector('.list').classList.contains('ex-grid')
-const pickMuscle = host => act(() => host.querySelector('.chip[aria-pressed]').click())
+// .chips scopes to the muscle row: the explorer's fatigue toggle is also a pressed chip
+const pickMuscle = host => act(() => host.querySelector('.chips .chip[aria-pressed]').click())
 const setView = v => useStore.setState(s => ({ S: { ...s.S, exerciseView: v } }))
 
 beforeEach(() => {

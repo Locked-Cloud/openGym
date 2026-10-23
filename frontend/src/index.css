@@ -1685,10 +1685,9 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
 .mx-bothmap{display:none}
 .mx-view-seg{max-width:190px}
 .bm-m.match{stroke:var(--acc);stroke-width:4}
-@media (min-width:1000px){
-  .mx-onemap,.mx-view-seg{display:none}
-  .mx-bothmap{display:flex}
-}
+/* the ≥1000px halves of the stage live in the desktop block at the bottom of
+   this file — the responsive tests resolve THE first (min-width:1000px) block,
+   so no other block may sit ahead of it */
 /* The detail panel's fatigue chip: the same three bucket colours the fatigue map shades
    with (.hm-fatigue above), "ready" included — on the map it is simply the unshaded base. */
 .mx-state{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;flex:none}
@@ -1929,6 +1928,9 @@ button.wl-summary{width:100%;padding:0 0 10px;text-align:start;border-radius:var
 /* --------------------------------------------------- desktop (≥1000px) --- */
 .cols{display:block}
 @media (min-width:1000px){
+  /* muscles explorer stage: desktop has the room for both figures side by side */
+  .mx-onemap,.mx-view-seg{display:none}
+  .mx-bothmap{display:flex}
   #app{max-width:1080px;padding-top:calc(var(--conn) + 32px);padding-bottom:calc(128px + var(--sab))}
   .conn-row{max-width:640px}   /* the width of the .narrow pages below it */
   body.resting #app{padding-bottom:calc(220px + var(--sab))}
