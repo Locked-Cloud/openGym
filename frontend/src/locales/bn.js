@@ -2363,4 +2363,8 @@ export default {
   'Uncertain — needs professional review': 'অনিশ্চিত — পেশাদারের পর্যালোচনা দরকার',
   'No same-muscle exercise passes your constraints.': 'একই পেশির কোনো ব্যায়াম আপনার সীমাবদ্ধতাগুলো পাস করে না।',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': 'যার আশপাশ করে আপনি প্রশিক্ষণ করছেন তার নাম দিন, তারপর এতে জড়িত শরীরের অংশ বা পেশি বেছে নিন। এগুলো ছোঁয় এমন প্রতিটি প্ল্যান দেখার জন্য চিহ্নিত হয়।',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'পেশাদার পর্যালোচনা',
+  'Exercises named outright': 'নাম ধরে উল্লেখ করা ব্যায়াম',
+  '“{0}” added': '“{0}” যোগ হয়েছে'
 }

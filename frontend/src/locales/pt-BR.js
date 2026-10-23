@@ -1445,6 +1445,10 @@ export const PT_BR_OVERRIDES = {
   'Uncertain — needs professional review': 'Incerto — precisa de revisão profissional',
   'No same-muscle exercise passes your constraints.': 'Nenhum exercício com os mesmos músculos passa pelas suas restrições.',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': 'Diga o que você está contornando no treino e escolha as partes do corpo ou músculos envolvidos. Qualquer plano que os toque fica sinalizado para você conferir.',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'Revisão profissional',
+  'Exercises named outright': 'Exercícios citados diretamente',
+  '“{0}” added': '“{0}” adicionado'
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

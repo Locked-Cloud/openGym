@@ -2284,4 +2284,8 @@ export default {
   'Uncertain — needs professional review': 'Niepewne — wymaga oceny specjalisty',
   'No same-muscle exercise passes your constraints.': 'Żadne ćwiczenie z tymi samymi mięśniami nie przechodzi twoich ograniczeń.',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': 'Nazwij to, co omijasz na treningu, a potem wybierz partie ciała lub mięśnie, których dotyczy. Każdy plan, który ich dotknie, zostanie oznaczony do sprawdzenia.',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'Ocena specjalisty',
+  'Exercises named outright': 'Ćwiczenia wymienione z nazwy',
+  '“{0}” added': '„{0}” dodano'
 }

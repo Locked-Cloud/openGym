@@ -2284,4 +2284,8 @@ export default {
   'Uncertain — needs professional review': '불확실 — 전문가 확인 필요',
   'No same-muscle exercise passes your constraints.': '같은 근육을 쓰는 운동 중 내 제약을 통과하는 게 없어요.',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': '피해서 훈련하는 부위를 적고, 해당하는 신체 부위나 근육을 고르세요. 이에 해당하는 계획은 확인하라고 표시돼요.',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': '전문가 검토',
+  'Exercises named outright': '이름으로 직접 지정한 운동',
+  '“{0}” added': '“{0}” 추가됨'
 }

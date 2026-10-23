@@ -2339,4 +2339,8 @@ export default {
   'Uncertain — needs professional review': 'غير مؤكد — يحتاج إلى مراجعة مختص',
   'No same-muscle exercise passes your constraints.': 'لا يجتاز قيودك أي تمرين بالعضلات نفسها.',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': 'سمِّ ما تتدرّب حوله، ثم اختر أجزاء الجسم أو العضلات التي يشملها. كل خطة تلامسها تُعلَّم لتلقي نظرة عليها.',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'مراجعة مختص',
+  'Exercises named outright': 'تمارين مذكورة بأسمائها',
+  '“{0}” added': 'تمت إضافة «{0}»'
 }

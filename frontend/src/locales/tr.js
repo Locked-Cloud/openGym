@@ -2284,4 +2284,8 @@ export default {
   'Uncertain — needs professional review': 'Belirsiz — profesyonel incelemesi gerekli',
   'No same-muscle exercise passes your constraints.': 'Aynı kaslara sahip hiçbir egzersiz kısıtlamalarını geçmiyor.',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': 'Etrafında antrenman yaptığın şeye bir ad ver, sonra ilgili vücut bölgelerini veya kasları seç. Onlara değen her plan göz atılmak üzere işaretlenir.',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'Profesyonel inceleme',
+  'Exercises named outright': 'Doğrudan adı geçen egzersizler',
+  '“{0}” added': '“{0}” eklendi'
 }

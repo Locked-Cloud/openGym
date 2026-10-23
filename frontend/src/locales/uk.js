@@ -2281,4 +2281,8 @@ export default {
   'Uncertain — needs professional review': 'Незрозуміло — потрібен погляд фахівця',
   'No same-muscle exercise passes your constraints.': "Жодна вправа з тими самими м'язами не проходить ваші обмеження.",
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': "Назвіть те, що ви обходите у тренуваннях, потім оберіть частини тіла або м'язи, яких це стосується. Кожна програма, що їх торкається, буде позначена для перегляду.",
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'Погляд фахівця',
+  'Exercises named outright': 'Вправи, названі прямо',
+  '“{0}” added': '«{0}» додано'
 }

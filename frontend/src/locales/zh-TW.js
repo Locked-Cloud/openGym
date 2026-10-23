@@ -2277,4 +2277,8 @@ export default {
   'Uncertain — needs professional review': '不確定——需要專業評估',
   'No same-muscle exercise passes your constraints.': '沒有肌群相同的動作能通過你的限制。',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': '為你要避開訓練的部位命名，然後選擇它涉及的身體部位或肌群。任何觸及它們的計畫都會被標記以供查看。',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': '專業評估',
+  'Exercises named outright': '直接點名的動作',
+  '“{0}” added': '已新增「{0}」'
 }

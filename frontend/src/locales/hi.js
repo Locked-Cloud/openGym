@@ -2284,4 +2284,8 @@ export default {
   'Uncertain — needs professional review': 'अनिश्चित — पेशेवर समीक्षा चाहिए',
   'No same-muscle exercise passes your constraints.': 'एक भी समान-मांसपेशी व्यायाम आपके प्रतिबंधों से नहीं गुज़रता।',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': 'जिसके इर्द-गिर्द आप ट्रेनिंग कर रहे हैं उसे नाम दें, फिर उससे जुड़े शरीर के भाग या मांसपेशियाँ चुनें। जो योजना भी इन्हें छूती है वह देखने के लिए चिन्हित हो जाती है।',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'पेशेवर समीक्षा',
+  'Exercises named outright': 'नाम से बताए गए व्यायाम',
+  '“{0}” added': '“{0}” जोड़ा गया'
 }

@@ -2295,4 +2295,8 @@ export default {
   'Uncertain — needs professional review': 'ไม่แน่ใจ — ต้องให้ผู้เชี่ยวชาญตรวจทาน',
   'No same-muscle exercise passes your constraints.': 'ไม่มีท่าออกกำลังกายที่ใช้กล้ามเนื้อเดียวกันและผ่านข้อจำกัดของคุณ',
   'Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.': 'ตั้งชื่อสิ่งที่คุณฝึกโดยเลี่ยง แล้วเลือกส่วนของร่างกายหรือกล้ามเนื้อที่เกี่ยวข้อง ทุกแผนที่แตะส่วนเหล่านี้จะถูกทำเครื่องหมายให้มาดู',
+  // --- constraint picker (components/ConstraintsSheet.jsx) ---,
+  'Professional review': 'การตรวจทานโดยผู้เชี่ยวชาญ',
+  'Exercises named outright': 'ท่าที่ระบุชื่อตรง ๆ',
+  '“{0}” added': 'เพิ่ม “{0}” แล้ว'
 }
