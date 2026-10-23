@@ -2379,7 +2379,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'Насколько ровный у вас сон на фоне тренировок: последняя ночь против ваших собственных последних ночей. Это не измерение восстановления, и оно ничего не говорит о вашем здоровье.',
   'Last {0} nights': 'Последние {0} ночей',
   'No nights yet. Add one below.': 'Ночей пока нет. Добавьте одну ниже.',
-  'Add a night’s sleep': 'Добавить ночь сна',
   'Add a night\\u2019s sleep': 'Добавить ночь сна',
   'Woke up on': 'Дата пробуждения',
   'How long': 'Сколько',
@@ -2387,5 +2386,12 @@ export default {
   'Save night': 'Сохранить ночь',
   'Enter how long you slept': 'Введите, сколько вы спали',
   'A night cannot be longer than a day.': 'Ночь не может быть длиннее дня.',
-  'Night saved': 'Ночь сохранена'
+  'Night saved': 'Ночь сохранена',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Вид спереди',
+  'Back view': 'Вид сзади',
+  'Search muscles…': 'Поиск мышц…',
+  'Hard sets': 'Тяжёлые подходы',
+  'Best exercise': 'Лучшее упражнение',
+  'Top exercises': 'Лучшие упражнения'
 }

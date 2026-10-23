@@ -2375,7 +2375,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'आपकी ट्रेनिंग के साथ आपकी नींद कितनी स्थिर है: पिछली रात आपकी अपनी हाल की रातों के मुकाबले। यह रिकवरी माप नहीं है और आपकी सेहत के बारे में कुछ नहीं कहता।',
   'Last {0} nights': 'पिछली {0} रातें',
   'No nights yet. Add one below.': 'अभी कोई रात नहीं। नीचे एक जोड़ें।',
-  'Add a night’s sleep': 'एक रात की नींद जोड़ें',
   'Add a night\\u2019s sleep': 'एक रात की नींद जोड़ें',
   'Woke up on': 'जागने की तारीख',
   'How long': 'कितनी देर',
@@ -2383,5 +2382,12 @@ export default {
   'Save night': 'रात सेव करें',
   'Enter how long you slept': 'बताएं आप कितनी देर सोए',
   'A night cannot be longer than a day.': 'एक रात एक दिन से लंबी नहीं हो सकती।',
-  'Night saved': 'रात सेव हो गई'
+  'Night saved': 'रात सेव हो गई',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'अगला दृश्य',
+  'Back view': 'पिछला दृश्य',
+  'Search muscles…': 'मांसपेशियाँ खोजें…',
+  'Hard sets': 'हार्ड सेट',
+  'Best exercise': 'सर्वश्रेष्ठ व्यायाम',
+  'Top exercises': 'प्रमुख व्यायाम'
 }

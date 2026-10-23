@@ -2378,7 +2378,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'Mennyire egyenletes az alvásod az edzéseid mellett: az utolsó éjszaka a saját közelmúltbeli éjszakáidhoz képest. Ez nem helyreállítás-mérés, és semmit nem mond az egészségedről.',
   'Last {0} nights': 'Utolsó {0} éjszaka',
   'No nights yet. Add one below.': 'Még nincsenek éjszakák. Adj hozzá egyet lentebb.',
-  'Add a night’s sleep': 'Éjszakai alvás hozzáadása',
   'Add a night\\u2019s sleep': 'Éjszakai alvás hozzáadása',
   'Woke up on': 'Ébredés napja',
   'How long': 'Mennyi ideig',
@@ -2386,5 +2385,12 @@ export default {
   'Save night': 'Éjszaka mentése',
   'Enter how long you slept': 'Add meg, mennyit aludtál',
   'A night cannot be longer than a day.': 'Egy éjszaka nem lehet hosszabb egy napnál.',
-  'Night saved': 'Éjszaka elmentve'
+  'Night saved': 'Éjszaka elmentve',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Elülső nézet',
+  'Back view': 'Hátsó nézet',
+  'Search muscles…': 'Izom keresése…',
+  'Hard sets': 'Kemény szettek',
+  'Best exercise': 'Legjobb gyakorlat',
+  'Top exercises': 'Top gyakorlatok'
 }

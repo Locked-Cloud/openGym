@@ -2368,7 +2368,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': '你的睡眠相對於訓練有多穩定：昨晚與你自己的近期夜晚相比。這不是恢復度測量，也不代表任何健康狀況。',
   'Last {0} nights': '最近 {0} 晚',
   'No nights yet. Add one below.': '還沒有夜晚紀錄。在下方新增一筆。',
-  'Add a night’s sleep': '新增一晚睡眠',
   'Add a night\\u2019s sleep': '新增一晚睡眠',
   'Woke up on': '醒來日期',
   'How long': '時長',
@@ -2376,5 +2375,12 @@ export default {
   'Save night': '儲存夜晚',
   'Enter how long you slept': '請輸入你睡了多久',
   'A night cannot be longer than a day.': '一晚不能超過一天。',
-  'Night saved': '夜晚已儲存'
+  'Night saved': '夜晚已儲存',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': '正面視圖',
+  'Back view': '背面視圖',
+  'Search muscles…': '搜尋肌肉…',
+  'Hard sets': '高強度組',
+  'Best exercise': '最佳動作',
+  'Top exercises': '主要動作'
 }

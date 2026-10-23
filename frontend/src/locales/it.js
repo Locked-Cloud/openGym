@@ -2375,7 +2375,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'Quanto è regolare il tuo sonno, accanto all’allenamento: l’ultima notte contro le tue notti recenti. Non è una misura del recupero e non dice nulla sulla tua salute.',
   'Last {0} nights': 'Ultime {0} notti',
   'No nights yet. Add one below.': 'Ancora nessuna notte. Aggiungine una qui sotto.',
-  'Add a night’s sleep': 'Aggiungi una notte di sonno',
   'Add a night\\u2019s sleep': 'Aggiungi una notte di sonno',
   'Woke up on': 'Svegliato il',
   'How long': 'Quanto',
@@ -2383,5 +2382,12 @@ export default {
   'Save night': 'Salva la notte',
   'Enter how long you slept': 'Indica quanto hai dormito',
   'A night cannot be longer than a day.': 'Una notte non può durare più di un giorno.',
-  'Night saved': 'Notte salvata'
+  'Night saved': 'Notte salvata',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Vista frontale',
+  'Back view': 'Vista posteriore',
+  'Search muscles…': 'Cerca muscoli…',
+  'Hard sets': 'Serie intense',
+  'Best exercise': 'Miglior esercizio',
+  'Top exercises': 'Esercizi principali'
 }

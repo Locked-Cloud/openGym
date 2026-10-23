@@ -2386,7 +2386,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'ความสม่ำเสมอของการนอนเทียบกับการฝึก: คืนก่อนเทียบกับหลายคืนล่าสุดของคุณเอง ไม่ใช่การวัดการฟื้นตัวและไม่ได้บอกอะไรเกี่ยวกับสุขภาพของคุณ',
   'Last {0} nights': '{0} คืนล่าสุด',
   'No nights yet. Add one below.': 'ยังไม่มีข้อมูลคืน เพิ่มได้ด้านล่าง',
-  'Add a night’s sleep': 'เพิ่มการนอนหนึ่งคืน',
   'Add a night\\u2019s sleep': 'เพิ่มการนอนหนึ่งคืน',
   'Woke up on': 'ตื่นวันที่',
   'How long': 'นานแค่ไหน',
@@ -2394,5 +2393,12 @@ export default {
   'Save night': 'บันทึกคืน',
   'Enter how long you slept': 'กรอกว่านอนนานเท่าไหร่',
   'A night cannot be longer than a day.': 'คืนหนึ่งไม่อาจยาวกว่าหนึ่งวันได้',
-  'Night saved': 'บันทึกคืนแล้ว'
+  'Night saved': 'บันทึกคืนแล้ว',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'มุมมองด้านหน้า',
+  'Back view': 'มุมมองด้านหลัง',
+  'Search muscles…': 'ค้นหากล้ามเนื้อ…',
+  'Hard sets': 'เซตหนัก',
+  'Best exercise': 'ท่าที่ดีที่สุด',
+  'Top exercises': 'ท่าหลัก'
 }

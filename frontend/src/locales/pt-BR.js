@@ -1536,7 +1536,6 @@ export const PT_BR_OVERRIDES = {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'A regularidade do seu sono, ao lado do treino: a última noite contra as suas próprias noites recentes. Não é uma medida de recuperação e não diz nada sobre a sua saúde.',
   'Last {0} nights': 'Últimas {0} noites',
   'No nights yet. Add one below.': 'Ainda não há noites. Adicione uma abaixo.',
-  'Add a night’s sleep': 'Adicionar uma noite de sono',
   'Add a night\\u2019s sleep': 'Adicionar uma noite de sono',
   'Woke up on': 'Acordou em',
   'How long': 'Quanto tempo',
@@ -1544,7 +1543,14 @@ export const PT_BR_OVERRIDES = {
   'Save night': 'Salvar noite',
   'Enter how long you slept': 'Informe quanto tempo você dormiu',
   'A night cannot be longer than a day.': 'Uma noite não pode ser mais longa que um dia.',
-  'Night saved': 'Noite salva'
+  'Night saved': 'Noite salva',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Vista frontal',
+  'Back view': 'Vista de costas',
+  'Search muscles…': 'Pesquisar músculos…',
+  'Hard sets': 'Séries pesadas',
+  'Best exercise': 'Melhor exercício',
+  'Top exercises': 'Principais exercícios'
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

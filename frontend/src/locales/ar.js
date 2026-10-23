@@ -2430,7 +2430,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'مدى انتظام نومك مقابل تدريبك: الليلة الماضية مقارنة بلياليك الأخيرة نفسها. ليس قياسًا للتعافي ولا يقول أي شيء عن صحتك.',
   'Last {0} nights': 'آخر {0} ليالٍ',
   'No nights yet. Add one below.': 'لا ليالٍ بعد. أضف ليلة أدناه.',
-  'Add a night’s sleep': 'إضافة ليلة نوم',
   'Add a night\\u2019s sleep': 'إضافة ليلة نوم',
   'Woke up on': 'تاريخ الاستيقاظ',
   'How long': 'المدة',
@@ -2438,5 +2437,12 @@ export default {
   'Save night': 'حفظ الليلة',
   'Enter how long you slept': 'أدخل مدة نومك',
   'A night cannot be longer than a day.': 'لا يمكن أن تكون الليلة أطول من اليوم.',
-  'Night saved': 'حُفظت الليلة'
+  'Night saved': 'حُفظت الليلة',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'منظر أمامي',
+  'Back view': 'منظر خلفي',
+  'Search muscles…': 'البحث في العضلات…',
+  'Hard sets': 'مجموعات شاقة',
+  'Best exercise': 'أفضل تمرين',
+  'Top exercises': 'التمارين الرئيسية'
 }

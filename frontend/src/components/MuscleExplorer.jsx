@@ -122,7 +122,7 @@ export default function MuscleExplorer({ onPick, onDetail, onPlan }) {
 
     <div className="row" style={{ gap: 8, marginBottom: 10 }}>
       <Segmented className="mx-view-seg" value={view} onChange={setView}
-        options={[{ value: 'front', label: t('Front') }, { value: 'back', label: t('Back') }]} />
+        options={[{ value: 'front', label: t('Front view') }, { value: 'back', label: t('Back view') }]} />
       <button className={'chip' + (fatigueOn ? ' on' : '')} style={{ marginInlineStart: 'auto' }}
         aria-pressed={fatigueOn} aria-label={t('Fatigue')} onClick={() => setFatigueOn(v => !v)}>
         <Icon name="flame" style={{ fontSize: 13, marginInlineEnd: 4 }} />{t('Fatigue')}

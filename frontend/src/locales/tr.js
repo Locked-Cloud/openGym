@@ -2375,7 +2375,6 @@ export default {
   'How steady your sleep is, next to your training: last night against your own recent nights. It is not a recovery measurement and says nothing about your health.': 'Uykun antrenmanlarının yanında ne kadar düzenli: dün gece, kendi son gecelerine karşı. Bu bir toparlanma ölçümü değildir ve sağlığın hakkında bir şey söylemez.',
   'Last {0} nights': 'Son {0} gece',
   'No nights yet. Add one below.': 'Henüz gece yok. Aşağıdan bir tane ekle.',
-  'Add a night’s sleep': 'Bir gece uykusu ekle',
   'Add a night\\u2019s sleep': 'Bir gece uykusu ekle',
   'Woke up on': 'Uyandığın gün',
   'How long': 'Ne kadar',
@@ -2383,5 +2382,12 @@ export default {
   'Save night': 'Geceyi kaydet',
   'Enter how long you slept': 'Ne kadar uyuduğunu gir',
   'A night cannot be longer than a day.': 'Bir gece bir günden uzun olamaz.',
-  'Night saved': 'Gece kaydedildi'
+  'Night saved': 'Gece kaydedildi',
+  // --- muscles explorer (components/MuscleExplorer.jsx) ---,
+  'Front view': 'Ön görünüm',
+  'Back view': 'Arka görünüm',
+  'Search muscles…': 'Kas ara…',
+  'Hard sets': 'Ağır setler',
+  'Best exercise': 'En iyi egzersiz',
+  'Top exercises': 'Öne çıkan egzersizler'
 }
