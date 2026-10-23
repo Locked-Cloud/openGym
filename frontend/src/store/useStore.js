@@ -12,7 +12,7 @@ import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJson
 import { initHealthSync, syncHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
-import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey } from '../lib/sync-merge.js'
+import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey, POWERLIFTING_MEETS_CAP } from '../lib/sync-merge.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
@@ -247,6 +247,12 @@ export const DEF = {
   // one: { [routineId]: [{ id, ts, label, routine }, …] }, append-only and merged by version id
   // (lib/sync-merge.js mergeRoutineHistory). Declared here so every overlay path has the key.
   routineHistory: {},
+  // The powerlifting module (lib/powerlifting.js): training maxes in kg (the working unit, lb
+  // is display only), the planner's rules (null = the engine's defaults) and the meets logged,
+  // newest first and capped (lib/sync-merge.js POWERLIFTING_MEETS_CAP). Maxes and rules carry
+  // per-field stamps and meets their own `_ts`/`_f`, the way constraints do
+  // (lib/sync-merge.js mergePowerlifting). Declared here so every overlay path has the key.
+  powerlifting: { trainingMaxes: { squat: null, bench: null, deadlift: null }, rules: null, meets: [] },
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -1410,6 +1416,31 @@ export const useStore = create((set, get) => {
     },
     resolveConstraintAction(id) {
       get().update(S => { S.constraints = { items: resolveConstraintItem(S.constraints.items, id, todayISO()) } })
+    },
+    // Powerlifting (lib/powerlifting.js), the same thin-write pattern: stampChange puts the
+    // per-field `_f` on the maxes/rules objects and the `_ts`/`_f` on a changed meet, the stamps
+    // mergePowerlifting reads on another device (lib/sync-merge.js). saveMeet is add-or-replace
+    // by id; the list stays newest-first and capped, so years of meets cannot grow the file.
+    setPowerliftingMaxes(m) {
+      get().update(S => {
+        S.powerlifting = { ...S.powerlifting, trainingMaxes: { squat: m?.squat ?? null, bench: m?.bench ?? null, deadlift: m?.deadlift ?? null } }
+      })
+    },
+    setPowerliftingRules(r) {
+      get().update(S => { S.powerlifting = { ...S.powerlifting, rules: r && typeof r === 'object' && !Array.isArray(r) ? r : null } })
+    },
+    saveMeet(meet) {
+      if (!meet || typeof meet !== 'object') return
+      get().update(S => {
+        const id = meet.id != null && meet.id !== '' ? String(meet.id) : 'm_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+        const meets = (S.powerlifting.meets || []).filter(x => x && x.id !== id)
+        meets.push({ ...meet, id })
+        meets.sort((a, b) => String(b?.date || '').localeCompare(String(a?.date || '')))
+        S.powerlifting = { ...S.powerlifting, meets: meets.slice(0, POWERLIFTING_MEETS_CAP) }
+      })
+    },
+    deleteMeet(id) {
+      get().update(S => { S.powerlifting = { ...S.powerlifting, meets: (S.powerlifting.meets || []).filter(x => x && x.id !== id) } })
     },
     // A routine's own version history, the by-hand half (lib/routine-history.js); update() takes
     // one on every material edit and restoreRoutineVersion takes its own before restoring, so a

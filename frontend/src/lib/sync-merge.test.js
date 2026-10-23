@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { highestStamp, stampChange, keepReset, localExtras, mergeDeletions, stampDeletions, stampEdits, mergeBodyweight, mergeResetIds, mergeStampedMap, mergeStates, newerOf, resetIdsOf, RESET_ID_MAX, sinceReset, stampCustomEx, stampRoutines, stampWorkout, unionById } from './sync-merge.js'
+import { highestStamp, stampChange, keepReset, localExtras, mergeDeletions, stampDeletions, stampEdits, mergeBodyweight, mergeResetIds, mergeStampedMap, mergeStates, newerOf, resetIdsOf, RESET_ID_MAX, sinceReset, stampCustomEx, stampRoutines, stampWorkout, unionById, POWERLIFTING_MEETS_CAP } from './sync-merge.js'
 import { mergeImport } from './import-csv.js'
 import { ROUTINE_HISTORY_CAP } from './routine-history.js'
 import { convertBodyWeight, convertStateUnit, convertWeight } from './units.js'
@@ -599,6 +599,100 @@ describe('routine history unions by version id', () => {
     expect(added.customEx).toEqual(plain.customEx)
     expect(added.week).toEqual(plain.week)
     expect(added.favEx).toEqual(plain.favEx)
+  })
+})
+
+// The powerlifting module (lib/powerlifting.js): the training maxes and the rules are each one
+// object merged field by field, the meets union by id with each field of a shared meet from the
+// side that changed it last (mergePowerlifting) — the constraint rules, one key deeper.
+describe('powerlifting keeps the field edited last, meets union by id', () => {
+  const pl = (over = {}) => ({ trainingMaxes: { squat: null, bench: null, deadlift: null }, rules: null, meets: [], ...over })
+  const mt = (id, date, over = {}) => ({ id, date, lifts: { squat: [], bench: [], deadlift: [] }, ...over })
+
+  it('a squat max changed on one device survives a bench max changed on the other', () => {
+    const A = base({ _ts: 100, powerlifting: pl({ trainingMaxes: { squat: 145, bench: 100, deadlift: 180, _ts: 90, _f: { squat: 90 } } }) })
+    const B = base({ _ts: 200, powerlifting: pl({ trainingMaxes: { squat: 140, bench: 105, deadlift: 180, _ts: 95, _f: { bench: 95 } } }) })
+    for (const m of [mergeStates(A, B), mergeStates(B, A)]) {
+      expect(m.powerlifting.trainingMaxes).toMatchObject({ squat: 145, bench: 105, deadlift: 180 })
+    }
+  })
+
+  it('rules: the later-stamped field wins; both null stays null', () => {
+    const A = base({ _ts: 100, powerlifting: pl({ rules: { incrementKg: 5, _ts: 90, _f: { incrementKg: 90 } } }) })
+    const B = base({ _ts: 200, powerlifting: pl({ rules: { incrementKg: 2.5, openerPct: { min: 0.88, max: 0.9 }, _ts: 95, _f: { openerPct: 95 } } }) })
+    for (const m of [mergeStates(A, B), mergeStates(B, A)]) {
+      expect(m.powerlifting.rules).toMatchObject({ incrementKg: 5, openerPct: { min: 0.88, max: 0.9 } })
+    }
+    const none = mergeStates(base({ _ts: 1, powerlifting: pl() }), base({ _ts: 2, powerlifting: pl() }))
+    expect(none.powerlifting.rules).toBeNull()
+    expect(none.powerlifting.trainingMaxes).toEqual({ squat: null, bench: null, deadlift: null })
+  })
+
+  it('meets union by id; of a meet both have, each field from the side that changed it last', () => {
+    const A = base({ _ts: 100, powerlifting: pl({ meets: [
+      mt('m1', '2026-10-01', { lifts: { squat: [{ weightKg: 140, result: 'good' }], bench: [], deadlift: [] }, _ts: 90, _f: { lifts: 90 } }),
+      mt('m2', '2026-09-01'),
+    ] }) })
+    const B = base({ _ts: 200, powerlifting: pl({ meets: [
+      mt('m1', '2026-10-02', { lifts: { squat: [{ weightKg: 140, result: 'fail' }], bench: [], deadlift: [] }, _ts: 95, _f: { date: 95 } }),
+      mt('m3', '2026-08-01'),
+    ] }) })
+    for (const m of [mergeStates(A, B), mergeStates(B, A)]) {
+      expect(m.powerlifting.meets.map(x => x.id).sort()).toEqual(['m1', 'm2', 'm3'])
+      const m1 = m.powerlifting.meets.find(x => x.id === 'm1')
+      expect(m1.date).toBe('2026-10-02')                  // B's, its date stamped later
+      expect(m1.lifts.squat[0].result).toBe('good')       // A's, its lifts stamped later
+    }
+  })
+
+  it('the union is newest first and capped at POWERLIFTING_MEETS_CAP', () => {
+    const d = i => new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10)
+    const many = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => mt('v' + (from + i), d(from + i)))
+    const A = base({ _ts: 100, powerlifting: pl({ meets: many(1, 20) }) })
+    const B = base({ _ts: 200, powerlifting: pl({ meets: many(11, 60) }) })   // v11–v20 on both, 60 in the union
+    const m = mergeStates(A, B)
+    expect(m.powerlifting.meets).toHaveLength(POWERLIFTING_MEETS_CAP)
+    expect(m.powerlifting.meets[0].id).toBe('v60')
+    expect(m.powerlifting.meets.at(-1).id).toBe('v11')
+  })
+
+  it('a copy without the key (an old client) keeps the other\'s meets; a malformed value reads as none', () => {
+    const A = base({ _ts: 100, powerlifting: pl({ meets: [mt('m1', '2026-10-01')] }) })
+    const old = base({ _ts: 200 })
+    for (const m of [mergeStates(A, old), mergeStates(old, A)]) {
+      expect(m.powerlifting.meets.map(x => x.id)).toEqual(['m1'])
+    }
+    expect(mergeStates(base({ _ts: 1 }), base({ _ts: 2 })).powerlifting).toBeUndefined()
+    const junk = base({ _ts: 50, powerlifting: { trainingMaxes: 'junk', rules: [], meets: 'nope' } })
+    expect(mergeStates(A, junk).powerlifting.meets.map(x => x.id)).toEqual(['m1'])
+    const out = mergeStates(junk, base({ _ts: 1 })).powerlifting
+    expect(out.trainingMaxes).toBe('junk')   // junk on the newer side passes through, as unknown keys do
+    expect(out.rules).toBeNull()
+    expect(out.meets).toEqual([])
+    expect(mergeStates(base({ _ts: 2, powerlifting: 'oops' }), base({ _ts: 1 })).powerlifting).toBe('oops')
+  })
+
+  it('sign-in (prefer) keeps the preferred side\'s maxes and rules as they are, unions the meets', () => {
+    const server = base({ _ts: 100, powerlifting: pl({
+      trainingMaxes: { squat: 145, _ts: 10, _f: { squat: 10 } },
+      rules: { incrementKg: 5, _ts: 10 },
+    }) })
+    const device = base({ _ts: 50, powerlifting: pl({
+      trainingMaxes: { squat: 140, bench: 105, _ts: 99, _f: { bench: 99 } },
+      meets: [mt('d1', '2026-10-01')],
+    }) })
+    const m = mergeStates(server, device, { prefer: 'a' })
+    expect(m.powerlifting.trainingMaxes).toMatchObject({ squat: 145, _ts: 10 })   // unmixed
+    expect(m.powerlifting.trainingMaxes.bench).toBeUndefined()
+    expect(m.powerlifting.rules).toMatchObject({ incrementKg: 5 })
+    expect(m.powerlifting.meets.map(x => x.id)).toEqual(['d1'])
+  })
+
+  it('the merged module is a copy, not the input', () => {
+    const A = base({ _ts: 100, powerlifting: pl({ meets: [mt('m1', '2026-10-01')] }) })
+    const m = mergeStates(A, base({ _ts: 50 }))
+    m.powerlifting.meets[0].date = 'changed'
+    expect(A.powerlifting.meets[0].date).toBe('2026-10-01')
   })
 })
 
