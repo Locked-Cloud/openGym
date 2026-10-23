@@ -174,7 +174,7 @@ describe('CoachIntake — the consent screen', () => {
   it('lists the built-in categories first, then whatever the server says actually goes', async () => {
     vi.mocked(disclosure).mockResolvedValue({ categories: ['plan', 'prefs'], providerLabel: 'Anthropic', payer: 'you', host: 'api.anthropic.com' })
     mount()
-    expect(all('.ob-consent-row')).toHaveLength(5)                       // CATEGORY_TEXT, before the call lands
+    expect(all('.ob-consent-row')).toHaveLength(6)                       // CATEGORY_TEXT, before the call lands
     await settle()
     expect(all('.ob-consent-row')).toHaveLength(2)
     expect(host.textContent).toContain('Sent straight to api.anthropic.com with your own API key')
@@ -197,7 +197,7 @@ describe('CoachIntake — the consent screen', () => {
     mocks.config = { coach: { enabled: true, providerLabel: 'Claude Agent SDK' } }
     mount(); await settle()
     expect(host.textContent).toContain('Sent to Claude Agent SDK, running on this server')
-    expect(all('.ob-consent-row')).toHaveLength(5)      // and the built-in list stands in
+    expect(all('.ob-consent-row')).toHaveLength(6)      // and the built-in list stands in
 
     act(() => root.unmount())
     mocks.config = { coach: { enabled: true } }

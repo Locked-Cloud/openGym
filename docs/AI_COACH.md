@@ -248,7 +248,7 @@ archive.
 
 `api/coach/payload.js` is built as an allowlist: every field is copied in **by name**, nothing
 is spread and nothing is passed through, so a field added to the state blob next year cannot
-ride along by accident. The five categories it can send — the same list the consent screen
+ride along by accident. The six categories it can send — the same list the consent screen
 renders from, so the screen cannot drift from the payload — are:
 
 | Category | What it covers |
@@ -257,6 +257,7 @@ renders from, so the screen cannot drift from the payload — are:
 | `training` | logged sets, targets, effort ratings, durations, PRs and session notes in the review window |
 | `bodyweight` | weigh-ins in the window and your goal weight |
 | `profile` | the intake answers you gave the Coach, including any limitations |
+| `constraints` | your **active training constraints**: each one's label, the body parts, muscles and exercise ids it names, and who recorded it — and nothing else (never the note, the dates or the review flag; those stay on your device) |
 | `cohort` (optional) | only with comparison on and your own opt-in: anonymous medians from the other people sharing — never their data, and never yours to them beyond the same medians |
 | `prefs` | unit, language, effort scale |
 
@@ -299,6 +300,12 @@ you that has not:
   train it.
 - **hit something that exists.** Every target names a routine in your plan, and anything about
   an exercise names one that is actually in that routine.
+- **cleared your constraints.** Anywhere a proposal introduces an exercise — a created plan, an
+  add, a swap, a new routine — the id is checked against your active constraints (an id one
+  lists outright, or an overlap on its body part or primary muscle). Blocked and flagged
+  exercises are refused before you ever see them; an exercise only a *secondary* muscle
+  overlaps is allowed through as needing a professional's judgement, and the same gate runs
+  again on your device when an accepted change is applied.
 - **cited its evidence.** A change with no `why` is refused.
 
 A rejected answer gets **one** repair round, with the errors handed back verbatim. Two failures

@@ -616,3 +616,83 @@ test('a flag is one pair of regional indicators, not a run of them spelling a wo
   }
   for (const key of ['trophy', 'crown', 'medal', 'flag', 'star', 'target', 'shield']) assert.equal(glyph(key), key);
 });
+
+/* ---------------- training constraints ---------------- */
+/* ctx.constraints is the payload's cleaned list (core/constraints.js): label, bodyParts,
+   muscles, exerciseIds, source, active-only, no status field. Only changes that introduce an
+   exercise face the check — a created plan's exercises, an add, a swap, a new routine's list —
+   because a reorder or a prescription change touches nothing the person is not already
+   training. blocked and flagged refuse (and feed the repair round); uncertain passes, the same
+   call the client's apply gate makes. Real catalogue ids, so the taxonomy mapping is what is
+   under test: 0001 sit-up (waist/abs), 0025 bench (chest, overlay primaries 'chest'), 3593
+   squat (upper legs, tg quads, mg glutes, sm incl. lower back). */
+const C = (label, over = {}) => [{ label, bodyParts: [], muscles: [], exerciseIds: [], source: 'self', ...over }];
+const reviewWith = (changes, ctx) => validateReview({ coach_contract: 1, summary: 's', changes }, PLAN, ctx);
+
+test('a created plan may not include an exercise an active constraint names outright', () => {
+  const r = validatePlan({ routines: [{ name: 'A', ex: [{ id: '0001', sets: 3, reps: 10 }] }] }, { constraints: C('No sit-ups', { exerciseIds: ['0001'] }) });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => e.includes('"0001"') && e.includes('No sit-ups') && e.includes('ruled out')), r.errors.join(' | '));
+});
+
+test('a body-part constraint refuses a plan exercise, naming the constraint for the repair round', () => {
+  const r = validatePlan({ routines: [{ name: 'A', ex: [{ id: '3593', sets: 3, reps: 10 }] }] }, { constraints: C('Legs off', { bodyParts: ['upper legs'] }) });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => e.includes('"3593"') && e.includes('Legs off')));
+  // Without the constraint the same plan is fine.
+  assert.equal(validatePlan({ routines: [{ name: 'A', ex: [{ id: '3593', sets: 3, reps: 10 }] }] }).ok, true);
+});
+
+test('a primary-muscle constraint flags through tg, mg and the muscle-map overlay alike', () => {
+  const plan = id => validatePlan({ routines: [{ name: 'A', ex: [{ id, sets: 3, reps: 10 }] }] }, { constraints: C('Quads', { muscles: ['quads'] }) });
+  assert.equal(plan('3593').ok, false, 'tg quads');
+  const glutes = validatePlan({ routines: [{ name: 'A', ex: [{ id: '3593', sets: 3, reps: 10 }] }] }, { constraints: C('Glutes', { muscles: ['glutes'] }) });
+  assert.equal(glutes.ok, false, 'mg glutes');
+  const chest = validatePlan({ routines: [{ name: 'A', ex: [{ id: '0025', sets: 3, reps: 10 }] }] }, { constraints: C('Chest', { muscles: ['chest'] }) });
+  assert.equal(chest.ok, false, 'the overlay redrew the bench onto chest, and that counts too');
+});
+
+test('a secondary-muscle-only overlap is uncertain and passes', () => {
+  const lowerBack = C('Lower back', { muscles: ['lower back'] });   // squat: sm only
+  assert.equal(validatePlan({ routines: [{ name: 'A', ex: [{ id: '3593', sets: 3, reps: 10 }] }] }, { constraints: lowerBack }).ok, true);
+  const add = reviewWith([change({ type: 'add-exercise', target: { routineId: 'r2' }, after: { id: '3593', sets: 3, reps: 10 } })], { constraints: lowerBack });
+  assert.equal(add.ok, true);
+});
+
+test('an explicit-id constraint blocks an exercise the catalogue does not hold, a custom one', () => {
+  // The id was named outright; resolution is not needed to know that.
+  const r = validatePlan(
+    { routines: [{ name: 'A', ex: [{ id: 'cx1', sets: 3, reps: 10 }] }], customEx: [{ id: 'cx1', n: 'Sandbag carry', bp: 'back' }] },
+    { constraints: C('No sandbags', { exerciseIds: ['cx1'] }) }
+  );
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => e.includes('cx1') && e.includes('No sandbags')));
+});
+
+test('an add-exercise or swap-in a constraint flags is refused', () => {
+  const add = reviewWith([change({ type: 'add-exercise', target: { routineId: 'r2' }, after: { id: '0001', sets: 3, reps: 10 } })], { constraints: C('No sit-ups', { exerciseIds: ['0001'] }) });
+  assert.equal(add.ok, false);
+  assert.match(add.errors[0], /"0001".*No sit-ups/);
+  const swap = reviewWith([change({ type: 'swap-exercise', target: { routineId: 'r2', exId: '0009' }, after: { id: '3593' } })], { constraints: C('Legs off', { bodyParts: ['upper legs'] }) });
+  assert.equal(swap.ok, false);
+  assert.ok(swap.errors.some(e => e.includes('"3593"') && e.includes('Legs off')));
+});
+
+test('a new routine listing a constrained exercise is refused whole', () => {
+  const ex = [{ id: '0009', sets: 3, reps: 10 }, { id: '0001', sets: 3, reps: 10 }];
+  const r = reviewWith([change({ type: 'add-routine', target: {}, after: { name: 'C', ex } })], { constraints: C('No sit-ups', { exerciseIds: ['0001'] }) });
+  assert.equal(r.ok, false);
+  assert.ok(r.errors.some(e => e.includes('"0001"') && e.includes('No sit-ups')));
+  // The same routine without the constraint is fine.
+  assert.equal(reviewWith([change({ type: 'add-routine', target: {}, after: { name: 'C', ex } })], {}).ok, true);
+});
+
+test('changes that introduce nothing are never constraint-checked', () => {
+  // r1 already trains 0001, the very exercise this constraint names — and none of these may
+  // add it anywhere, so none of them is the constraint engine's business.
+  const noSitups = { constraints: C('No sit-ups', { exerciseIds: ['0001'] }) };
+  assert.equal(reviewWith([change({ type: 'sets', after: 4 })], noSitups).ok, true);
+  assert.equal(reviewWith([change({ type: 'reps', after: 12 })], noSitups).ok, true);
+  assert.equal(reviewWith([change({ type: 'reorder', target: { routineId: 'r1' }, after: ['0007', '0001'] })], noSitups).ok, true);
+  assert.equal(validateReview({ nochange: true, reading: 'fine' }, PLAN, noSitups).nochange, true);
+});
