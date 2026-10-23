@@ -27,7 +27,9 @@ const copy = (prefix, html, { sw = 'const CACHE = "og-1a2b3c"' } = {}) => ({
 })
 const check = files => {
   const dir = tree(files)
-  try { return checkMobileBundle(dir).map(p => p.replace(dir + '/', '')) }
+  // node:path joins with '\' on Windows while the messages append '/', so the temp root is
+  // stripped in either shape and what is left is compared with '/' separators, as on POSIX.
+  try { return checkMobileBundle(dir).map(p => p.replace(dir + '/', '').replace(dir + '\\', '').replace(/\\/g, '/')) }
   finally { rmSync(dir, { recursive: true, force: true }) }
 }
 

@@ -2,7 +2,10 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/useStore.js'
 import { useUI } from '../store/useUI.js'
-import { exOr } from '../lib/exercises.js'
+import { exOr, EXIDX } from '../lib/exercises.js'
+import { activeConstraints, validateRoutine } from '../lib/constraints.js'
+import { constraintsSheet, constraintSubstitutesSheet, constraintReason, CONSTRAINT_LEVEL_LABEL } from '../components/ConstraintsSheet.jsx'
+import { routineHistorySheet } from '../components/RoutineHistorySheet.jsx'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -418,6 +421,22 @@ export default function RoutineEdit() {
       exConfigSheet(ex, next, cfg => commit(ex, current => ({ id: ex.id, sg: current.sg, ...cfg })), null, r, null, null, t('Replace'))
     }, { title: t('Replace exercise'), like: openedOn })
   }
+  // A flagged or blocked exercise's same-muscle stand-ins (lib/constraints.js
+  // suggestSubstitutes): each one replaces the slot through the same path as Replace (#110),
+  // keeping its sets and reps, and only while the slot still holds the exercise the sheet was
+  // opened on — a sync can land while it is open, same as the picker above.
+  const substitute = (i, exId) => {
+    const openedOn = r.ex[i]?.id
+    constraintSubstitutesSheet({
+      exId,
+      exName: exerciseNameText(exOr(exId)),
+      onReplace: newId => {
+        const live = useStore.getState().S
+        edit(x => { if (x[i] && x[i].id === openedOn) x[i] = replaceSlotExercise(x[i], newId, live, id) })
+        toast(t('Replaced with “{0}”', exerciseNameText(exOr(newId))))
+      },
+    })
+  }
   // This routine on paper (#282): the weekly printout's page for one session, through the same
   // two print paths — the browser's print dialog (→ Save as PDF) on the web, the native Print
   // plugin in the app, where the WebView has no window.print().
@@ -461,6 +480,13 @@ export default function RoutineEdit() {
   const profile = activeProfile(S)
   const missingCount = profile ? r.ex.filter(e => !exAvailable(S, exOr(e.id))).length : 0
   const swipe = workoutControls(S).swipeSets
+  // Training constraints (lib/constraints.js): the exercises of this plan an active constraint
+  // names the same tissue as, one verdict per slot that has one. Nothing is computed at all
+  // while no constraint is active — the card, like the check, costs nothing then.
+  const constraintItems = S.constraints?.items
+  const verdicts = (activeConstraints(constraintItems).length ? validateRoutine(r, constraintItems, EXIDX) : [])
+    .map((v, i) => ({ ...v, i })).filter(v => v.verdict)
+  const anyBlocked = verdicts.some(v => v.verdict.level === 'blocked')
 
   return <div className="narrow">
     <div className="hdr">
@@ -501,6 +527,32 @@ export default function RoutineEdit() {
         <Icon name="warning" style={{ color: 'var(--orange)' }} />
         <div className="small">{t('{0} of {1} exercises need equipment outside "{2}"', missingCount, r.ex.length, profile.name)}</div>
       </div>
+    </div>}
+
+    {/* The constraints card says where the plan and an active constraint name the same tissue
+        (lib/constraints.js) — never that an exercise is safe or unsafe. Blocked is the strong
+        word: someone listed that exact lift. Uncertain hands the question to a professional. */}
+    {verdicts.length > 0 && <div className="card" style={{ marginBottom: 16, borderColor: anyBlocked ? 'var(--red)' : 'var(--orange)' }}>
+      <div className="row" style={{ gap: 8, alignItems: 'center', marginBottom: 10 }}>
+        <Icon name="warning" style={{ color: anyBlocked ? 'var(--red)' : 'var(--orange)' }} />
+        <div className="small grow">{t('A training constraint overlaps exercises of this plan. That is an overlap of names, not a judgement — check with a qualified professional about what is right for you.')}</div>
+      </div>
+      <div className="list">
+        {verdicts.map(v => {
+          const level = v.verdict.level
+          const color = level === 'blocked' ? 'var(--red)' : level === 'flagged' ? 'var(--orange)' : 'var(--blue)'
+          return <div key={v.slotIndex} className="item" style={{ alignItems: 'center' }}>
+            <span className="tag" style={{ color, borderColor: color }}>{CONSTRAINT_LEVEL_LABEL[level]()}</span>
+            <div className="grow">
+              <div className={`tt ${exerciseNameClass(exOr(v.exId))}`}>{exerciseNameFor(exOr(v.exId))}</div>
+              <div className="ss capitalize">{[v.verdict.constraintLabel, constraintReason(v.verdict)].filter(Boolean).join(' · ')}</div>
+            </div>
+            {level !== 'uncertain' && <Button size="sm" variant="tinted" onClick={() => substitute(v.i, v.exId)}>{t('Substitutions')}</Button>}
+          </div>
+        })}
+      </div>
+      <div style={{ height: 10 }} />
+      <Button size="sm" icon="gear" onClick={() => constraintsSheet()}>{t('Manage constraints')}</Button>
     </div>}
 
     {/* "Add exercise" heads the list (v1.3.11): with it under the last exercise, a long routine
@@ -589,6 +641,8 @@ export default function RoutineEdit() {
     }}>{t('Copy routine')}</Button>
     <div style={{ height: 10 }} />
     <Button disabled={!r.ex.length} onClick={printRoutine}>{t('Print / Save as PDF')}</Button>
+    <div style={{ height: 10 }} />
+    <Button icon="history" onClick={() => routineHistorySheet(id)}>{t('Version history')}</Button>
     <div style={{ height: 10 }} />
     <Button variant="danger" onClick={() => confirmSheet({
       title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,

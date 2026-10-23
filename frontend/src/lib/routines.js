@@ -3,6 +3,7 @@ import { defaultConfig, isBw, modeOf, MAX_PLANNED_WARMUPS, NOTE_MAX } from './hi
 import { isAssisted, isBodyweightEq, isCardio } from './exercises.js'
 import { sessionsFor } from './progression.js'
 import { isWarmupRow } from './workout-model.js'
+import { deleteRoutineHistory } from './routine-history.js'
 
 /**
  * Create a deep copy of a routine with a new id and a "(Copy)" suffix.
@@ -42,6 +43,14 @@ export function deleteRoutine(s, id) {
   Object.keys(s.dayPlan || {}).forEach(iso => {
     if (s.dayPlan[iso] === id) { dropped[iso] = id; delete s.dayPlan[iso] }
   })
+  // The routine's version history goes with it (lib/routine-history.js): a plan that no longer
+  // exists has nothing left to restore into. The Undo's snapshot (routineSnapshot, taken before
+  // this runs) carries the history beside the routine, so the toast puts both back and the
+  // history dies exactly when the deletion does — with the toast, not before it. The Coach's own
+  // revert restores the routine list only, so a reverted coach removal starts its history over:
+  // its snapshot ring is size-budgeted (lib/coach.js trim) and a routine's versions do not fit
+  // in it.
+  if (s.routineHistory && id in s.routineHistory) s.routineHistory = deleteRoutineHistory(s.routineHistory, id)
   return dropped
 }
 
@@ -65,7 +74,11 @@ export function routineSnapshot(S, id) {
   Object.keys(S.dayPlan || {}).forEach(iso => { if (S.dayPlan[iso] === id) dayPlan[iso] = id })
   const seqAt = Array.isArray(S.rotation?.sequence) ? S.rotation.sequence.indexOf(id) : -1
   const queueAt = Array.isArray(S.queue?.ids) ? S.queue.ids.indexOf(id) : -1
-  return { routine: structuredClone(S.routines[index]), index, week, dayPlan, seqAt, queueAt }
+  // Its version history too (deleteRoutine takes it with the routine), so an Undo puts the whole
+  // routine back — the plan as it was, and every version of it there were. Absent when the
+  // routine never had any, which keeps older snapshots' restores working untouched.
+  const history = Array.isArray(S.routineHistory?.[id]) ? structuredClone(S.routineHistory[id]) : null
+  return { routine: structuredClone(S.routines[index]), index, week, dayPlan, seqAt, queueAt, ...(history ? { history } : {}) }
 }
 
 const putBack = (list, at, id) => {
@@ -96,6 +109,16 @@ export function restoreRoutine(s, snap) {
     s.rotation = { ...s.rotation, sequence: putBack(s.rotation.sequence, snap.seqAt, id) }
   }
   if (snap.queueAt >= 0 && Array.isArray(s.queue?.ids)) s.queue = { ...s.queue, ids: putBack(s.queue.ids, snap.queueAt, id) }
+  // The version history back with it, unioned by version id with whatever is there now: versions
+  // are append-only, so the same id is the same version by construction, and a sync can have
+  // brought some in while the routine was deleted (a deletion of them does not travel — they
+  // union back, lib/sync-merge.js mergeRoutineHistory). Oldest first, as the module stores them.
+  if (snap.history) {
+    const cur = Array.isArray(s.routineHistory?.[id]) ? s.routineHistory[id] : []
+    const seen = new Set(cur.filter(v => v?.id != null).map(v => v.id))
+    const back = snap.history.filter(v => v?.id != null && !seen.has(v.id))
+    if (back.length) s.routineHistory = { ...(s.routineHistory || {}), [id]: [...cur, ...back].sort((a, b) => (a.ts || 0) - (b.ts || 0)) }
+  }
   return true
 }
 

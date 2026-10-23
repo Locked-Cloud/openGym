@@ -35,6 +35,8 @@ import { checkForUpdate, downloadAndInstall, fetchChecksum, RELEASES_PAGE } from
 import { forgetCoach } from '../lib/coach-api.js'
 import { REST_MAX, REST_PAUSE_MIN, REST_PAUSE_MAX, fmtRest, fmtDuration } from '../lib/duration.js'
 import { starterPlanSheet, confirmSheet, importFromApp, importFromHevy, equipmentProfileSheet, plateInventorySheet, dumbbellInventorySheet, menuSheet } from '../sheets.jsx'
+import { constraintSummary } from '../lib/constraints.js'
+import { constraintsSheet } from '../components/ConstraintsSheet.jsx'
 import Icon from '../components/Icon.jsx'
 import { durationSheet } from '../components/DurationWheel.jsx'
 import { showsConnection, showsLocalLine } from '../components/SyncBanner.jsx'
@@ -446,7 +448,10 @@ export default function Settings({ page = null, find = null, via = null }) {
     })} />
 
   const pages = {
-    workout: () => <>
+    workout: () => {
+      // How many constraints are active, for the row's value (lib/constraints.js).
+      const constraintsActive = constraintSummary(S.constraints?.items).active
+      return <>
       <Section title={t('Rest')} footer={t('Each exercise can have its own rest too. Set it in the exercise settings of a routine.')}>
         {restRow}
         {restPauseRow}
@@ -508,11 +513,18 @@ export default function Settings({ page = null, find = null, via = null }) {
             value={S.gifSize === 'mini' || S.gifSize === 'off' ? S.gifSize : 'full'}
             onChange={v => update(s => { s.gifSize = v })} />
         </Row>
+        {/* Injury-aware training constraints (lib/constraints.js): what you are training around.
+            The sheet lists, adds and resolves them; the value says how many are active. */}
+        <Row icon="shield" iconTint="var(--orange)" title={t('Training constraints')}
+          subtitle={t('Flag plan exercises that overlap something you are training around.')}
+          value={constraintsActive ? t('{0} active', constraintsActive) : null}
+          accessory="chevron" onClick={constraintsSheet} />
       </Section>
       <Section>
         <Row icon="wrench" iconTint="var(--grey)" title={t('Fine-tuning')} subtitle={t('Buttons, timed sets')} accessory="chevron" onClick={() => open('advanced')} />
       </Section>
-    </>,
+    </>
+    },
 
     advanced: () => {
       // S.wc overlays DEF.wc, so a profile from before these switches existed reads as the lean default.
