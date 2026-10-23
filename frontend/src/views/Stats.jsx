@@ -13,9 +13,10 @@ import Heatmap from '../components/Heatmap.jsx'
 import Icon from '../components/Icon.jsx'
 import BodyMap, { BodyMapLegend } from '../components/BodyMap.jsx'
 import { loadOfWeeklyPlan, loadOfWorkouts, muscleBalanceWindow, rankOf, MUSCLES, MUSCLE_NAME, musclesOf } from '../lib/muscles.js'
-import { fatigueOf, strengthOf, STRENGTH_FLOOR, LB_TO_KG } from '../lib/recovery.js'
+import { fatigueOf, strengthOf, STRENGTH_FLOOR } from '../lib/recovery.js'
 import { strengthExerciseRowsForMuscle } from '../lib/strength-exercises.js'
-import { fatigueStateOf } from '../lib/recovery-view.js'
+import { fatigueStateOf, FATIGUE_LEVELS, profileBodyweightKg } from '../lib/recovery-view.js'
+export { FATIGUE_LEVELS }
 import { e1rmSeries, best1RM, formulaOf } from '../lib/onerm.js'
 import { currentDbLoad, workoutAs } from '../lib/dumbbells.js'
 import { maxRepsSeries } from '../lib/pyramid.js'
@@ -56,14 +57,6 @@ function latestMuscleTraining(workouts) {
   }
   return latest
 }
-
-export const FATIGUE_LEVELS = [
-  { at: 0, level: 0 },
-  { at: 0.15, level: 1 },
-  { at: 0.25, level: 2 },
-  { at: 0.4, level: 3 },
-  { at: 0.55, level: 4, exclusive: true },
-]
 
 export const STRENGTH_LEVELS = [
   { at: STRENGTH_FLOOR, level: 0 },
@@ -113,16 +106,8 @@ function fatigueLabel(value) {
   return t(state === 'ready' ? 'Ready' : state === 'recovering' ? 'Recovering' : 'Fatigued')
 }
 
-// The user's own last registered bodyweight, in kg: the body-mass part of a bodyweight
-// exercise's load for fatigue and for estimated effort, so both read the same set the same way.
-function profileBodyweightKg(S) {
-  const entries = S.bodyweight || []
-  if (!entries.length) return null
-  const last = entries.slice().sort((a, b) => String(a.d).localeCompare(String(b.d))).at(-1)
-  if (!last || !(last.w > 0)) return null
-  return S.unit === 'lb' ? last.w * LB_TO_KG : last.w
-}
-
+// The user's own last registered bodyweight in kg now lives in lib/recovery-view.js
+// (profileBodyweightKg), shared with the Muscles explorer's fatigue overlay.
 function MuscleBalance({ S }) {
   const [view, setView] = useState('balance')
   const [win, setWin] = useState(7)

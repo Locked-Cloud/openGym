@@ -1676,6 +1676,30 @@ body.no-tabbar #timer.working{box-shadow:inset 0 var(--hair) 0 var(--acc),0 -10p
    outline path of its own, so without this the body reads as one flat blob. */
 .bm-v path{stroke:var(--surface);stroke-width:2.5;stroke-linejoin:round}
 
+/* ---------------------------------------------- Muscles explorer stage -- */
+/* One figure plus a Front/Back control on phones; the app's ≥1000px desktop shell has the
+   room for both figures side by side, so the single map and its control step aside and the
+   two-up map takes over. Both maps stay in the DOM and CSS picks — the breakpoint belongs
+   to the stylesheet here like everywhere else in the app, not to a resize listener. */
+.mx-onemap{display:flex}
+.mx-bothmap{display:none}
+.mx-view-seg{max-width:190px}
+.bm-m.match{stroke:var(--acc);stroke-width:4}
+@media (min-width:1000px){
+  .mx-onemap,.mx-view-seg{display:none}
+  .mx-bothmap{display:flex}
+}
+/* The detail panel's fatigue chip: the same three bucket colours the fatigue map shades
+   with (.hm-fatigue above), "ready" included — on the map it is simply the unshaded base. */
+.mx-state{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;flex:none}
+.mx-state.ready{color:var(--green);background:color-mix(in srgb,var(--green) 14%,transparent)}
+.mx-state.recovering{color:var(--yellow);background:color-mix(in srgb,var(--yellow) 14%,transparent)}
+.mx-state.fatigued{color:var(--red);background:color-mix(in srgb,var(--red) 14%,transparent)}
+/* The pair of headline readings at the top of the muscle panel (hard sets, best e1RM). */
+.mx-stat{background:var(--surface-2);border-radius:12px;padding:10px 12px;flex:1;min-width:0}
+.mx-stat .l{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--label-2);margin-bottom:3px}
+.mx-stat .v{font-size:20px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+
 .mrow{display:flex;align-items:center;gap:9px;padding:5px 0}
 .mrow .nm{flex:1;min-width:0;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mrow .bar{width:74px;height:5px;border-radius:3px;background:var(--surface-2);flex:none;overflow:hidden}

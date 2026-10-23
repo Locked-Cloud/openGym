@@ -26,7 +26,7 @@ function useBodyPaths() {
   return paths
 }
 
-function View({ view, levels, onMuscle, selected }) {
+function View({ view, levels, onMuscle, selected, matched }) {
   const activate = (event, slug) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
     if (event.key === ' ') event.preventDefault()
@@ -39,7 +39,7 @@ function View({ view, levels, onMuscle, selected }) {
       {MUSCLES.map(slug => (view.p[slug] || []).map((d, i) =>
         <path
           key={slug + i}
-          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '')}
+          className={'bm-m l' + (levels[slug] || 0) + (selected === slug ? ' sel' : '') + (matched?.has(slug) ? ' match' : '')}
           d={d}
           onClick={onMuscle ? () => onMuscle(slug) : undefined}
           onKeyDown={onMuscle ? event => activate(event, slug) : undefined}
@@ -60,16 +60,20 @@ function View({ view, levels, onMuscle, selected }) {
  * the hardest-worked muscle in that same load, so it always reads as a balance. Pass ordered
  * `{ at, level, exclusive? }` `thresholds` for a fixed absolute scale (recovery views use this
  * to keep their semantic bands stable); omitting it preserves the balance behavior.
+ * `view` narrows the stage to one figure ('front' | 'back'); the default 'both' shows the
+ * two side by side, which is what every map outside the Muscles explorer does. `matched`
+ * is a Set of slugs to outline — the explorer's muscle search highlighting, orthogonal to
+ * the `selected` ring.
  */
-export default function BodyMap({ load = {}, thresholds, body = 'male', onMuscle, selected, className = '' }) {
+export default function BodyMap({ load = {}, thresholds, body = 'male', onMuscle, selected, matched, view = 'both', className = '' }) {
   const paths = useBodyPaths()
   const levels = levelsOf(load, thresholds)
   const g = paths && (paths[body] || paths.male)
   return (
     <div className={'bodymap ' + className}>
       {g ? <>
-        <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} />
-        <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} />
+        {view !== 'back' && <View view={g.front} levels={levels} onMuscle={onMuscle} selected={selected} matched={matched} />}
+        {view !== 'front' && <View view={g.back} levels={levels} onMuscle={onMuscle} selected={selected} matched={matched} />}
       </> : <div className="bm-ph" aria-hidden="true" />}
     </div>
   )
