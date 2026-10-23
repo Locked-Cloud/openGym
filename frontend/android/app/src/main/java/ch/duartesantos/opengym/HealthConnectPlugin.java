@@ -9,8 +9,12 @@ import androidx.health.connect.client.HealthConnectClient;
 import androidx.health.connect.client.PermissionController;
 import androidx.health.connect.client.records.ExerciseSessionRecord;
 import androidx.health.connect.client.records.Record;
+import androidx.health.connect.client.records.SleepSessionRecord;
 import androidx.health.connect.client.records.WeightRecord;
 import androidx.health.connect.client.records.metadata.Metadata;
+import androidx.health.connect.client.request.ReadRecordsRequest;
+import androidx.health.connect.client.response.ReadRecordsResponse;
+import androidx.health.connect.client.time.TimeRangeFilter;
 import androidx.health.connect.client.units.Mass;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
@@ -19,6 +23,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
@@ -59,6 +64,12 @@ import org.json.JSONObject;
  *   await HC.write({ sessions: [...], weights: [...] });
  *   await HC.remove({ sessions: [ids], weights: [ids] });
  *   await HC.openSettings();        // Health Connect's data screen, or its store page
+ *
+ * The read side (sleep sessions, for the readiness card on Home — asked for separately, from
+ * that card alone):
+ *   await HC.sleepStatus();             // { status, granted } — the sleep-read permission alone
+ *   await HC.requestSleepPermission();  // { granted }
+ *   await HC.readSleep({ days: 14 });   // { sessions: [{ id, start, end, title }] } in ms
  */
 @CapacitorPlugin(name = "HealthConnect")
 public class HealthConnectPlugin extends Plugin {
@@ -67,8 +78,13 @@ public class HealthConnectPlugin extends Plugin {
     // The literal permission names, as declared in AndroidManifest.xml.
     private static final String WRITE_EXERCISE = "android.permission.health.WRITE_EXERCISE";
     private static final String WRITE_WEIGHT = "android.permission.health.WRITE_WEIGHT";
+    // The sleep-read permission (readiness): asked for from the readiness card's Refresh only,
+    // never with the write permissions, so a user of one side is never asked for the other.
+    private static final String READ_SLEEP = "android.permission.health.READ_SLEEP";
     // Health Connect takes at most this many records in one insert.
     private static final int CHUNK = 500;
+    // How far back readSleep may be asked to look: enough nights for a 7-night average.
+    private static final int SLEEP_DAYS_MAX = 60;
 
     // One at a time, in order: a remove queued behind a write must not overtake it.
     private final ExecutorService worker = Executors.newSingleThreadExecutor();
@@ -81,6 +97,12 @@ public class HealthConnectPlugin extends Plugin {
         Set<String> p = new HashSet<>();
         p.add(WRITE_EXERCISE);
         p.add(WRITE_WEIGHT);
+        return p;
+    }
+
+    private static Set<String> sleepPermissions() {
+        Set<String> p = new HashSet<>();
+        p.add(READ_SLEEP);
         return p;
     }
 
@@ -222,6 +244,103 @@ public class HealthConnectPlugin extends Plugin {
         } catch (Exception e) {
             call.reject(e.getMessage(), "failed");
         }
+    }
+
+    // ---- sleep sessions, read (readiness) --------------------------------------------------
+
+    // The readiness card's data source: sleep sessions other apps wrote, read back. Nothing is
+    // asked here — the permission question is requestSleepPermission's, called only from that
+    // card's Refresh — and a session is handed to JS as it stands (id, start, end, title); the
+    // nights-per-morning arithmetic stays in JS (lib/readiness.js).
+
+    @PluginMethod
+    public void sleepStatus(PluginCall call) {
+        String status = sdkStatus();
+        if (!"available".equals(status)) {
+            JSObject r = new JSObject();
+            r.put("status", status);
+            r.put("granted", false);
+            call.resolve(r);
+            return;
+        }
+        worker.execute(() -> {
+            try {
+                JSObject r = new JSObject();
+                r.put("status", status);
+                r.put("granted", granted().containsAll(sleepPermissions()));
+                call.resolve(r);
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
+    @PluginMethod
+    public void requestSleepPermission(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        ActivityResultContract<Set<String>, Set<String>> contract = PermissionController.createRequestPermissionResultContract(PROVIDER);
+        Intent intent = contract.createIntent(getContext(), sleepPermissions());
+        startActivityForResult(call, intent, "sleepPermissionsResult");
+    }
+
+    @ActivityCallback
+    private void sleepPermissionsResult(PluginCall call, ActivityResult result) {
+        if (call == null) return;
+        ActivityResultContract<Set<String>, Set<String>> contract = PermissionController.createRequestPermissionResultContract(PROVIDER);
+        Set<String> got = contract.parseResult(result.getResultCode(), result.getData());
+        worker.execute(() -> {
+            try {
+                JSObject r = new JSObject();
+                r.put("granted", (got != null && got.containsAll(sleepPermissions())) || granted().containsAll(sleepPermissions()));
+                call.resolve(r);
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
+    }
+
+    @PluginMethod
+    public void readSleep(PluginCall call) {
+        if (!"available".equals(sdkStatus())) {
+            call.reject("Health Connect is not available", "unavailable");
+            return;
+        }
+        int days = Math.max(1, Math.min(SLEEP_DAYS_MAX, call.getInt("days", 14)));
+        worker.execute(() -> {
+            try {
+                TimeRangeFilter range = TimeRangeFilter.between(Instant.now().minus(Duration.ofDays(days)), Instant.now());
+                // The explicit type argument is for javac: the Kotlin constructor takes a
+                // KClass<out R> the diamond operator cannot infer across the interop boundary.
+                // This alpha of the client has no @JvmOverloads, so its defaults are spelled
+                // out: every origin, newest first, the usual 1000-record page, no page token.
+                ReadRecordsRequest<SleepSessionRecord> request = new ReadRecordsRequest<SleepSessionRecord>(
+                        JvmClassMappingKt.getKotlinClass(SleepSessionRecord.class), range,
+                        Collections.emptySet(), false, 1000, null);
+                ReadRecordsResponse<?> response = (ReadRecordsResponse<?>) BuildersKt.runBlocking(
+                        EmptyCoroutineContext.INSTANCE, (scope, cont) -> client().readRecords(request, cont));
+                JSArray sessions = new JSArray();
+                for (Object o : response.getRecords()) {
+                    if (!(o instanceof SleepSessionRecord)) continue;
+                    SleepSessionRecord rec = (SleepSessionRecord) o;
+                    JSObject s = new JSObject();
+                    s.put("id", rec.getMetadata().getId());
+                    s.put("start", rec.getStartTime().toEpochMilli());
+                    s.put("end", rec.getEndTime().toEpochMilli());
+                    s.put("title", rec.getTitle() == null ? "" : String.valueOf(rec.getTitle()));
+                    sessions.put(s);
+                }
+                JSObject r = new JSObject();
+                r.put("sessions", sessions);
+                call.resolve(r);
+            } catch (SecurityException e) {
+                call.reject(e.getMessage(), "permission");
+            } catch (Exception e) {
+                call.reject(e.getMessage(), "failed");
+            }
+        });
     }
 
     private void delete(Class<? extends Record> type, List<String> clientIds) throws InterruptedException {

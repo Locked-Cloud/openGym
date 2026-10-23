@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { highestStamp, stampChange, keepReset, localExtras, mergeDeletions, stampDeletions, stampEdits, mergeBodyweight, mergeResetIds, mergeStampedMap, mergeStates, newerOf, resetIdsOf, RESET_ID_MAX, sinceReset, stampCustomEx, stampRoutines, stampWorkout, unionById, POWERLIFTING_MEETS_CAP } from './sync-merge.js'
 import { mergeImport } from './import-csv.js'
 import { ROUTINE_HISTORY_CAP } from './routine-history.js'
+import { SLEEPS_CAP } from './readiness.js'
 import { convertBodyWeight, convertStateUnit, convertWeight } from './units.js'
 import { retimeWorkout } from './workout-date.js'
 import { inventoryFor, loadKindFor, withLoadKind, withPlatePairs, withStandardPlates } from './plates.js'
@@ -693,6 +694,73 @@ describe('powerlifting keeps the field edited last, meets union by id', () => {
     const m = mergeStates(A, base({ _ts: 50 }))
     m.powerlifting.meets[0].date = 'changed'
     expect(A.powerlifting.meets[0].date).toBe('2026-10-01')
+  })
+})
+
+// The sleep nights of the readiness module (lib/readiness.js): union by id, and of a night both
+// copies have, each field from the side that changed it last (mergeReadiness) — the meets' rule
+// exactly. A night is corrected, never deleted; it falls off the capped list instead.
+describe('readiness nights union by id, the field edited last wins', () => {
+  const rd = (over = {}) => ({ sleeps: [], ...over })
+  const night = (id, date, minutes, over = {}) => ({ id, date, minutes, ...over })
+  const d = i => new Date(Date.UTC(2026, 9, 1 + i)).toISOString().slice(0, 10)
+
+  it('a night corrected on one device survives a pull made on the other', () => {
+    const A = base({ _ts: 100, readiness: rd({ sleeps: [
+      night('hc-a', d(0), 442, { _ts: 90, _f: { minutes: 90 } }),
+      night('hc-b', d(1), 410),
+    ] }) })
+    const B = base({ _ts: 200, readiness: rd({ sleeps: [
+      night('hc-a', d(0), 400, { _ts: 95, _f: { minutes: 95 } }),
+      night('hc-c', d(2), 460),
+    ] }) })
+    for (const m of [mergeStates(A, B), mergeStates(B, A)]) {
+      expect(m.readiness.sleeps.map(x => x.id).sort()).toEqual(['hc-a', 'hc-b', 'hc-c'])
+      expect(m.readiness.sleeps.find(x => x.id === 'hc-a').minutes).toBe(400)   // B's, its minutes stamped later
+    }
+  })
+
+  it('the union is newest first and capped at SLEEPS_CAP', () => {
+    const many = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => night('v' + (from + i), d(from + i), 400))
+    const A = base({ _ts: 100, readiness: rd({ sleeps: many(0, 80) }) })
+    const B = base({ _ts: 200, readiness: rd({ sleeps: many(60, 110) }) })      // 60–80 on both, 111 in the union
+    const m = mergeStates(A, B)
+    expect(SLEEPS_CAP).toBe(90)
+    expect(m.readiness.sleeps).toHaveLength(SLEEPS_CAP)
+    expect(m.readiness.sleeps[0].id).toBe('v110')
+    expect(m.readiness.sleeps.at(-1).id).toBe('v21')                            // the oldest fell off
+  })
+
+  it('a copy without the key keeps the other\'s nights; a malformed value reads as none', () => {
+    const A = base({ _ts: 100, readiness: rd({ sleeps: [night('hc-a', d(0), 442)] }) })
+    const old = base({ _ts: 200 })
+    for (const m of [mergeStates(A, old), mergeStates(old, A)]) {
+      expect(m.readiness.sleeps.map(x => x.id)).toEqual(['hc-a'])
+    }
+    expect(mergeStates(base({ _ts: 1 }), base({ _ts: 2 })).readiness).toBeUndefined()
+    const junk = base({ _ts: 50, readiness: { sleeps: 'nope' } })
+    expect(mergeStates(A, junk).readiness.sleeps.map(x => x.id)).toEqual(['hc-a'])
+    expect(mergeStates(junk, base({ _ts: 1 })).readiness.sleeps).toEqual([])
+    expect(mergeStates(base({ _ts: 2, readiness: 'oops' }), base({ _ts: 1 })).readiness).toBe('oops')
+  })
+
+  it('sign-in (prefer) keeps the preferred side\'s nights as they are, unions the other\'s in', () => {
+    const server = base({ _ts: 100, readiness: rd({ sleeps: [night('hc-a', d(0), 442, { _ts: 90 })] }) })
+    const device = base({ _ts: 50, readiness: rd({ sleeps: [
+      night('hc-a', d(0), 400, { _ts: 99, _f: { minutes: 99 } }),
+      night('m-b', d(1), 390),
+    ] }) })
+    const m = mergeStates(server, device, { prefer: 'a' })
+    expect(m.readiness.sleeps.find(x => x.id === 'hc-a').minutes).toBe(442)     // unmixed
+    expect(m.readiness.sleeps.map(x => x.id).sort()).toEqual(['hc-a', 'm-b'])
+  })
+
+  it('the merged nights are a copy, not the input, and their stamps count in highestStamp', () => {
+    const A = base({ _ts: 100, readiness: rd({ sleeps: [night('hc-a', d(0), 442)] }) })
+    const m = mergeStates(A, base({ _ts: 50 }))
+    m.readiness.sleeps[0].minutes = 1
+    expect(A.readiness.sleeps[0].minutes).toBe(442)
+    expect(highestStamp(base({ readiness: rd({ sleeps: [night('hc-a', d(0), 442, { _ts: 777, _f: { minutes: 888 } })] }) }))).toBe(888)
   })
 })
 

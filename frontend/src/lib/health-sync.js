@@ -1,6 +1,8 @@
 // Health Connect on the Android app (#200): turning it on, and keeping it in step with the log.
 // What gets written is worked out in lib/health-connect.js; this file owns the native plugin
-// (HealthConnectPlugin.java) and the phone's own record of what it wrote.
+// (HealthConnectPlugin.java) and the phone's own record of what it wrote. The sleep READ side
+// (readiness, lib/readiness.js) lives here too, at the bottom — separate permissions, separate
+// opt-in, one plugin either way.
 //
 // It is a fact about this phone, not about the training log: kept in its own file in the app's
 // data directory, never in S, so it does not sync to a server, ride in a backup, or switch on a
@@ -9,6 +11,7 @@
 // The web build never gets here (MOBILE is a build-time flag), and iOS answers 'unsupported'.
 import { MOBILE, isAndroid, readJsonFile, writeJsonFile } from './mobile.js'
 import { healthRecords, planSync, writtenIds } from './health-connect.js'
+import { sleepsFromSessions } from './readiness.js'
 import { exerciseNameFor } from './i18n-core.js'
 import { EXIDX } from './exercises.js'
 import { speedUnitOf } from './speed.js'
@@ -175,4 +178,82 @@ export function initHealthSync(getState) {
   // Once at launch, for a workout finished just before the app was closed. Reading the file here
   // also settles whether it is on, which the saves wait for (syncHealth).
   setTimeout(() => loadHealth().then(() => syncHealth(getState())).catch(() => {}), 3000)
+}
+
+/* ---- Sleep sessions, read (readiness) -------------------------------------------------------- */
+
+// The other direction of the Health Connect integration: sleep sessions READ from the store
+// other apps (a watch, a sleep app) write to, for the sleep-consistency signal on Home
+// (lib/readiness.js). Independent of the write sync above: it asks for the sleep-read
+// permission only from the readiness card's Refresh — never on its own — and once the
+// permission stands, the recent nights are pulled quietly when the app comes back to the
+// foreground and once at launch. Nothing here writes to Health Connect, and the write sync
+// never asks for a read permission: a user of only one of the two is never asked for the other.
+
+// Enough nights for a 7-night average without re-reading months of history on every pull.
+export const SLEEP_DAYS = 14
+
+/** { status: 'available' | …, granted } for the sleep-read permission alone. */
+export async function sleepStatus() {
+  if (!MOBILE) return { status: 'unsupported', granted: false }
+  try {
+    const p = await plugin()
+    if (!p) return { status: 'unsupported', granted: false }
+    return await p.HC.sleepStatus()
+  } catch { return { status: 'unsupported', granted: false } }
+}
+
+/** Health Connect's own screen for the sleep-read permission; { granted } afterwards. */
+export async function requestSleepAccess() {
+  const p = await plugin()
+  if (!p) return { granted: false }
+  try { return await p.HC.requestSleepPermission() } catch { return { granted: false } }
+}
+
+/**
+ * The last `days` nights' sleep sessions: [{ id, start, end }] in ms, Health Connect's own
+ * record ids. null where sleep cannot be read at all (nothing there, or the permission taken
+ * back) — an empty list means Health Connect answered with no sessions.
+ */
+export async function readSleepSessions(days = SLEEP_DAYS) {
+  if (!MOBILE) return null
+  const p = await plugin()
+  if (!p) return null
+  try { return (await p.HC.readSleep({ days }))?.sessions || [] } catch { return null }
+}
+
+/**
+ * The readiness card's Refresh: with `ask` (the default), Health Connect's own screen asks for
+ * the sleep-read permission the first time; then the recent nights are read. { ok: true, rows }
+ * — rows already in the store's shape (lib/readiness.js sleepsFromSessions) — or
+ * { ok: false, reason }: 'unsupported' (web, iOS, no Health Connect), 'denied' (the user said
+ * no), 'permission' (taken back since; only on the quiet path), 'unavailable' (the read failed).
+ */
+export async function pullSleeps({ ask = true } = {}) {
+  const st = await sleepStatus()
+  if (st.status !== 'available') return { ok: false, reason: 'unsupported' }
+  if (!st.granted) {
+    if (!ask) return { ok: false, reason: 'permission' }
+    const r = await requestSleepAccess()
+    if (!r.granted) return { ok: false, reason: 'denied' }
+  }
+  const sessions = await readSleepSessions()
+  if (!sessions) return { ok: false, reason: 'unavailable' }
+  return { ok: true, rows: sleepsFromSessions(sessions) }
+}
+
+// The quiet path: nights pulled only with the permission already standing — back in the
+// foreground (another app wrote last night's sleep meanwhile) and once at launch. Never asks,
+// never toasts; a pull that finds nothing changes nothing.
+let sleepStarted = false
+export function initSleepSync(onRows) {
+  if (!MOBILE || sleepStarted) return
+  sleepStarted = true
+  const pull = () => pullSleeps({ ask: false })
+    .then(r => { if (r.ok && r.rows.length) onRows(r.rows) })
+    .catch(() => {})
+  import('@capacitor/app').then(({ App }) => {
+    App.addListener('appStateChange', ({ isActive }) => { if (isActive) pull() })
+  }).catch(() => {})
+  setTimeout(pull, 4000)
 }

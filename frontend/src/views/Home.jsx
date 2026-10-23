@@ -5,6 +5,7 @@ import { effectiveRoutines, effectiveRoutineIds, nextTrainingDay, streakWeeks, l
 import { fmtNum, fmtDate, todayISO, isoOf, weekStartOf, weekDayOffset, DAYS, DAYN } from '../lib/format.js'
 import { t, tn, dateLocale } from '../lib/i18n.js'
 import { bwSheet, goalSheet, dayOverrideSheet, calendarSheet, startFlow, starterPlanSheet, bwDeltaColor, weighInsSheet } from '../sheets.jsx'
+import { ReadinessCard } from '../components/ReadinessSheet.jsx'
 import LineChart from '../components/LineChart.jsx'
 import Icon from '../components/Icon.jsx'
 import QueueRow from '../components/QueueRow.jsx'
@@ -222,6 +223,12 @@ export default function Home() {
         ? t('No weigh-ins yet. Log your weight to start the curve.')
         : t("No weigh-ins yet. Log your weight to start the curve (we also ask before every workout).")}</div>}
     </div>}
+
+    {/* Sleep-based readiness (lib/readiness.js): how last night compares with the user's own
+        recent nights — a consistency signal displayed alongside the training data, deliberately
+        not coupled into the fatigue model (lib/recovery.js). Tap opens the 7-night view and
+        hand entry; on Android the card's Refresh reads sleep sessions from Health Connect. */}
+    <ReadinessCard />
 
     <div className="card tappable" style={{ cursor: 'pointer' }} {...tappable(() => calendarSheet())}>
       <div className="row between">

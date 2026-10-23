@@ -191,8 +191,12 @@ that.
   Each weigh-in as a weight record, in kilograms. A workout without a real start and end is left
   out rather than given made-up times. `src/lib/health-connect.js` works this out; its tests
   pin it.
-- **Write-only.** The manifest declares `WRITE_EXERCISE` and `WRITE_WEIGHT` and nothing else, and
-  openGym reads nothing back.
+- **Writes, and one read.** The manifest declares `WRITE_EXERCISE` and `WRITE_WEIGHT` for the
+  writes above, and `READ_SLEEP` for the readiness card on Home: "Refresh sleep" there asks for
+  the sleep-read permission (its own screen, never bundled with the writes), and with the
+  permission standing the recent nights are pulled from Health Connect when the app comes back
+  to the foreground and once at launch — never asked for, only read. Sleep is the only thing
+  openGym reads back, and only for that card; nothing else is read, ever.
 - **No duplicates.** Every record carries openGym's own id as its `clientRecordId`
   (`opengym-w-<workout id>`, `opengym-bw-<day>`), so writing it again replaces it. An edited workout
   or weigh-in is written again; a deleted one is removed from Health Connect.

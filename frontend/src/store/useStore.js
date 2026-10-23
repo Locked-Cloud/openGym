@@ -9,10 +9,11 @@ import { guestAllowed } from '../lib/guest.js'
 import { emptyConstraints, addConstraint as addConstraintItem, updateConstraint as updateConstraintItem, resolveConstraint as resolveConstraintItem } from '../lib/constraints.js'
 import { snapshotRoutine, routineChanged, restoreVersion } from '../lib/routine-history.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
-import { initHealthSync, syncHealth } from '../lib/health-sync.js'
+import { initHealthSync, initSleepSync, syncHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
 import { liftLegacy } from '../lib/sync-legacy.js'
 import { mergeStates, localExtras, stampChange, highestStamp, stampRestore, stampReplace, inUnitOf, keepReset, resetIdsOf, mergeResetIds, entryKey, POWERLIFTING_MEETS_CAP } from '../lib/sync-merge.js'
+import { mergeSleeps, normalizeSleep } from '../lib/readiness.js'
 import { convertStateUnit } from '../lib/units.js'
 import { pendingRefCount, settleMedia, loadPending } from '../lib/media-owed.js'
 import { referencedHashes } from '../lib/media-refs.js'
@@ -253,6 +254,12 @@ export const DEF = {
   // per-field stamps and meets their own `_ts`/`_f`, the way constraints do
   // (lib/sync-merge.js mergePowerlifting). Declared here so every overlay path has the key.
   powerlifting: { trainingMaxes: { squat: null, bench: null, deadlift: null }, rules: null, meets: [] },
+  // Sleep-based readiness (lib/readiness.js): one row per night — { id, date (the ISO morning
+  // the night ended on), minutes }, newest first, capped (lib/readiness.js SLEEPS_CAP). Rows
+  // come from Health Connect pulls (Android, lib/health-sync.js) or hand entry; a hand-entered
+  // date stands over a pulled one. Nights carry their own `_ts`/`_f` and merge the way meets do
+  // (lib/sync-merge.js mergeReadiness). Declared here so every overlay path has the key.
+  readiness: { sleeps: [] },
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -519,6 +526,10 @@ export const useStore = create((set, get) => {
 
   initReminderSync(() => get().S)
   initHealthSync(() => get().S)
+  // The read side of Health Connect (sleep sessions, for readiness): pulled quietly when the
+  // app comes back to the foreground and once at launch — only ever with the sleep-read
+  // permission already granted, so nothing is ever asked on the user's behalf here.
+  initSleepSync(rows => get().importSleeps(rows))
 
   // Mobile build: the file mirror, and beside it whose copy it is and which one (its `_ts`) —
   // restoreFromMirror takes the file back only for that account, and only while the two agree,
@@ -1441,6 +1452,25 @@ export const useStore = create((set, get) => {
     },
     deleteMeet(id) {
       get().update(S => { S.powerlifting = { ...S.powerlifting, meets: (S.powerlifting.meets || []).filter(x => x && x.id !== id) } })
+    },
+    // Sleep-based readiness (lib/readiness.js), the same thin-write pattern: importSleeps is
+    // the machine path (a Health Connect pull — merge/upsert by id+date, re-capped, an
+    // unchanged night untouched stamps and all), saveNight the hand path, which replaces every
+    // row of its date so correcting a night never doubles it. stampChange puts the `_ts`/`_f`
+    // on a night this change added or corrected, the stamps mergeReadiness reads on another
+    // device (lib/sync-merge.js).
+    importSleeps(rows) {
+      if (!Array.isArray(rows) || !rows.length) return
+      get().update(S => { S.readiness = { sleeps: mergeSleeps(S.readiness?.sleeps, rows) } })
+    },
+    saveNight({ date, minutes } = {}) {
+      const row = normalizeSleep({ id: 'm-' + String(date ?? ''), date, minutes, manual: true })
+      if (!row) return false
+      get().update(S => {
+        const kept = (Array.isArray(S.readiness?.sleeps) ? S.readiness.sleeps : []).filter(x => !(x && x.date === row.date))
+        S.readiness = { sleeps: mergeSleeps(kept, [row]) }
+      })
+      return true
     },
     // A routine's own version history, the by-hand half (lib/routine-history.js); update() takes
     // one on every material edit and restoreRoutineVersion takes its own before restoring, so a
