@@ -36,6 +36,9 @@
  *   - routineHistory: key union; of a routine both have, its version lists unioned by version id —
  *     append-only, so the same id is the same version and kept once — then oldest first and capped
  *     again as the module stores them (ROUTINE_HISTORY_CAP, lib/routine-history.js)
+ *   - powerlifting: the maxes and rules of S.powerlifting field by field as below, its meets
+ *     unioned by id and each field of a meet both copies have from the side that changed it
+ *     last, then newest first and capped again (mergePowerlifting)
  *   - bodyweight, measurements: union by day, the later-edited (`t`) entry of a day that both have
  *   - favEx: ordered set union, the newer copy first
  *   - exWeights: union by exercise, the better `w` for that exercise — larger for an ordinary
@@ -433,6 +436,43 @@ export function mergeRoutineHistory(nh, oh) {
   return out
 }
 
+/** How many meets the powerlifting module keeps. Oldest are dropped first. */
+export const POWERLIFTING_MEETS_CAP = 50
+
+// The powerlifting module's meets, newest first and capped again as the store caps them.
+const byMeetDateDesc = (a, b) => String(b?.date || '').localeCompare(String(a?.date || ''))
+const capMeets = xs => xs.sort(byMeetDateDesc).slice(0, POWERLIFTING_MEETS_CAP)
+
+/**
+ * The powerlifting module's data (lib/powerlifting.js), S.powerlifting = { trainingMaxes, rules,
+ * meets }: the training maxes and the rules are each one object whose fields carry per-field
+ * stamps (stampEntry), so a max changed on one device survives a rule changed on the other the
+ * way a constraint's fields do; the meets union by id, each field of a meet both copies have
+ * from the side that changed it last (mergeEntry). `rules: null` — the engine's defaults —
+ * merges as an empty object and stays null when neither side overrode anything; without stamps
+ * the newer copy's reading wins, null included. With `prefer` the preferred side's maxes and
+ * rules stand as they are and only the meets union (the preferred copy's version of a shared
+ * id), as mergeConstraints does. A malformed value (no map, a list that is not one) reads as
+ * none, and the union is sorted and capped as the store keeps it.
+ */
+export function mergePowerlifting(np, op, prefer) {
+  const n = isMap(np) ? np : {}, o = isMap(op) ? op : {}
+  const out = clone(n)
+  if (!prefer) {
+    out.trainingMaxes = mergeEntry(isMap(n.trainingMaxes) ? n.trainingMaxes : {}, isMap(o.trainingMaxes) ? o.trainingMaxes : {})
+    out.rules = mergeEntry(isMap(n.rules) ? n.rules : {}, isMap(o.rules) ? o.rules : {})
+  }
+  if (isMap(out.trainingMaxes) && !Object.keys(out.trainingMaxes).length) out.trainingMaxes = n.trainingMaxes
+  if (isMap(out.rules) && !Object.keys(out.rules).length) out.rules = null
+  const other = new Map(list(o.meets).filter(x => x?.id != null).map(x => [x.id, x]))
+  out.meets = unionById(list(n.meets), list(o.meets)).map(x => {
+    const alt = !prefer && x?.id != null ? other.get(x.id) : null
+    return alt ? mergeEntry(x, alt) : clone(x)
+  })
+  out.meets = capMeets(out.meets)
+  return out
+}
+
 const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 const unitStamp = S => Number(S?.unitSet?.at) || 0
 
@@ -665,7 +705,7 @@ function applyDeletions(S, deleted) {
 // merge of their own are not stamped here; a field nobody stamped follows the newer copy, as before.
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
-  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'constraints', 'routineHistory',
+  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'constraints', 'routineHistory', 'powerlifting',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
@@ -879,6 +919,9 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   // A routine's version history (lib/routine-history.js) is append-only: both copies' versions of a
   // routine union by version id, oldest first, capped as the module caps them (mergeRoutineHistory).
   if (isMap(n.routineHistory) || isMap(o.routineHistory)) out.routineHistory = mergeRoutineHistory(n.routineHistory, o.routineHistory)
+  // The powerlifting module (lib/powerlifting.js) merges under its own key the same way the
+  // constraints do: maxes/rules field by field, meets unioned by id (mergePowerlifting).
+  if (isMap(n.powerlifting) || isMap(o.powerlifting)) out.powerlifting = mergePowerlifting(n.powerlifting, o.powerlifting, prefer)
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)
@@ -1077,6 +1120,15 @@ export function highestStamp(S) {
     see(x._ts)
     if (isMap(x._f)) for (const v of Object.values(x._f)) see(v)
   }
+  // The powerlifting module sits under one key as well (S.powerlifting): its maxes and rules
+  // objects carry per-field stamps, its meets their own `_ts`/`_f` — unwrapped for the same read.
+  if (isMap(S.powerlifting)) {
+    for (const x of [S.powerlifting.trainingMaxes, S.powerlifting.rules, ...list(S.powerlifting.meets)]) {
+      if (!isMap(x)) continue
+      see(x._ts)
+      if (isMap(x._f)) for (const v of Object.values(x._f)) see(v)
+    }
+  }
   for (const f of STAMPED_MAPS) if (isMap(S[f])) for (const v of Object.values(S[f])) see(stampOf(v))
   for (const e of [...list(S.bodyweight), ...list(S.measurements)]) if (e && typeof e === 'object') see(e.t)
   return m
@@ -1133,6 +1185,20 @@ export function stampChange(prev, next, wall = Date.now()) {
   // `constraints` at all (an older client's, a test's bare state) invents nothing.
   if (isMap(next.constraints)) {
     stampEntries(list(isMap(prev?.constraints) ? prev.constraints.items : null), list(next.constraints.items), now)
+  }
+  // The powerlifting module (lib/powerlifting.js) stamps the same way: the training maxes and
+  // the rules are each one object whose changed fields take `_f` (a squat max edited here
+  // survives a bench max edited there), and a meet this change added or edited is stamped like
+  // a constraint. Nothing is stamped when only the maxes' meta-free values stand still.
+  if (isMap(next.powerlifting)) {
+    const was = isMap(prev?.powerlifting) ? prev.powerlifting : {}
+    for (const k of ['trainingMaxes', 'rules']) {
+      const x = next.powerlifting[k]
+      if (!isMap(x)) continue
+      const old = isMap(was[k]) ? was[k] : null
+      if (!old || !sameEntry(old, x)) stampEntry(old, x, now)
+    }
+    stampEntries(list(was.meets), list(next.powerlifting.meets), now)
   }
   stampDeletions(prev, next, now)
   stampEdits(prev, next, now)
