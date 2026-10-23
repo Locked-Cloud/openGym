@@ -6,6 +6,7 @@ import { BODYPARTS, CATALOGUE, EXIDX, exOr, allExercises } from '../lib/exercise
 import { suggestSubstitutes } from '../lib/constraints.js'
 import { fmtDate, todayISO, exerciseNameText } from '../lib/format.js'
 import { useSheetKeyboard, tappable } from '../lib/use-sheet-keyboard.js'
+import { exercisePicker } from '../sheets.jsx'
 import Icon from './Icon.jsx'
 import { Button, Row, Segmented, Switch } from './ui.jsx'
 
@@ -74,7 +75,7 @@ export function ConstraintsSheet({ close }) {
             scopeOf(c) || null,
           ].filter(Boolean).join(' · ')}</div>
         </div>
-        {c.requiresReview && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }}>{t('Review')}</span>}
+        {c.requiresReview && <span className="tag" style={{ color: 'var(--orange)', borderColor: 'var(--orange)' }}>{t('Professional review')}</span>}
         <Icon name="chevronRight" className="chev" />
       </div>)}
     </div> : <div className="empty"><div className="ico"><Icon name="heart" /></div>{t('Nothing you are training around right now.')}</div>}
@@ -107,6 +108,7 @@ function ConstraintForm({ existing, close }) {
   const [label, setLabel] = useState(existing ? existing.label || '' : '')
   const [bodyParts, setBodyParts] = useState(existing ? [...(existing.bodyParts || [])] : [])
   const [muscles, setMuscles] = useState(existing ? [...(existing.muscles || [])] : [])
+  const [exerciseIds, setExerciseIds] = useState(existing ? [...(existing.exerciseIds || [])] : [])
   const [note, setNote] = useState(existing ? existing.note || '' : '')
   const [source, setSource] = useState(existing?.source === 'professional' ? 'professional' : 'self')
   const [requiresReview, setRequiresReview] = useState(existing ? existing.requiresReview === true : false)
@@ -114,16 +116,34 @@ function ConstraintForm({ existing, close }) {
   const { addConstraint, updateConstraint, resolveConstraintAction } = useStore.getState()
   const toast = m => useUI.getState().toast(m)
   const toggle = (list, set, v) => set(list.includes(v) ? list.filter(x => x !== v) : [...list, v])
+  // Exercises named outright go through the same catalogue picker the routine editor adds
+  // exercises with (sheets.jsx exercisePicker). That picker hands back one exercise per pick
+  // and is meant to stay open, so picks accumulate into the chip list below; the ids land in
+  // exerciseIds, which the engine's matchOf treats as its strongest ("blocked") overlap. The
+  // picker keeps the onPick closure from when it opened, so it cannot read this render's
+  // state — the ids are mirrored in a ref the callback keeps current (the routine editor
+  // reads the store live for the same reason; a draft form has no store to read).
+  const pickedIds = useRef(exerciseIds)
+  const addPicked = ex => {
+    if (pickedIds.current.includes(ex.id)) return
+    pickedIds.current = [...pickedIds.current, ex.id]
+    setExerciseIds(pickedIds.current)
+    toast(t('“{0}” added', exerciseNameText(ex)))
+  }
+  const removePicked = id => {
+    pickedIds.current = pickedIds.current.filter(x => x !== id)
+    setExerciseIds(pickedIds.current)
+  }
+  const pickExercise = () => exercisePicker(addPicked, { title: t('Exercises named outright') })
   const save = () => {
     const name = label.trim()
     if (!name) { toast(t('Give it a label')); return }
-    const fields = { label: name, bodyParts, muscles, note: note.trim(), source, requiresReview, startedOn: startedOn || null }
+    const fields = { label: name, bodyParts, muscles, exerciseIds, note: note.trim(), source, requiresReview, startedOn: startedOn || null }
     if (existing) updateConstraint(existing.id, fields)
     else addConstraint(fields)
     close()
     toast(existing ? t('Saved') : t('Constraint added'))
   }
-  const listed = (existing?.exerciseIds || []).map(id => EXIDX[id]).filter(Boolean)
   return <>
     <h3>{existing ? t('Edit constraint') : t('Add constraint')}</h3>
     <div className="muted small" style={{ marginBottom: 12 }}>{t('Name what you are training around, then pick the body parts or muscles it involves. Every plan that touches them is flagged for a look.')}</div>
@@ -139,6 +159,15 @@ function ConstraintForm({ existing, close }) {
     <div className="chips">
       {MUSCLE_OPTIONS.map(m => <button key={m} className={'chip' + (muscles.includes(m) ? ' on' : '')} onClick={() => toggle(muscles, setMuscles, m)}>{t(m)}</button>)}
     </div>
+    {/* The wrapping overrides are the dumbbell sheet's: exercise names are too long for the
+        one-line chip strip. An id the catalogue no longer resolves still shows (exOr's
+        "Unknown exercise"), the same deletion-visibility the engine keeps for its matches. */}
+    <div className="small dim" style={{ margin: '12px 0 6px' }}>{t('Exercises named outright')}</div>
+    <div className="chips" style={{ flexWrap: 'wrap', overflow: 'visible', touchAction: 'auto' }}>
+      {exerciseIds.map(id => <button key={id} className="chip on nocap" aria-label={t('Remove {0}', exerciseNameText(exOr(id)))}
+        onClick={() => removePicked(id)}>{exerciseNameText(exOr(id))} <Icon name="xmark" /></button>)}
+      <button className="chip nocap" onClick={pickExercise}>{t('Add exercise')}</button>
+    </div>
     <div style={{ height: 12 }} />
     <Row icon="personCircle" title={t('Who set it')}>
       <Segmented className="seg-inline"
@@ -150,9 +179,6 @@ function ConstraintForm({ existing, close }) {
       <Switch aria-label={t('Needs professional review')} checked={requiresReview} onChange={setRequiresReview} />
     </Row>
     <textarea className="input" rows={3} maxLength={500} placeholder={t('Note (optional)')} value={note} onChange={e => setNote(e.target.value)} />
-    {listed.length > 0 && <div className="muted small" style={{ margin: '10px 2px' }}>
-      {t('Exercises named outright: {0}', listed.map(exerciseNameText).join(', '))}
-    </div>}
     <div style={{ height: 14 }} />
     <Button variant="primary" onClick={save}>{existing ? t('Save') : t('Add constraint')}</Button>
     {existing && existing.status === 'active' && <>
