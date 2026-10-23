@@ -134,7 +134,7 @@ export function ReadinessSheet({ close }) {
         </div>)}
       </div>
     </> : <div className="empty"><div className="ico"><Icon name="moon" /></div>{t('No nights yet. Add one below.')}</div>}
-    <h4 className="sec" style={{ marginTop: 18 }}>{t('Add a night\u2019s sleep')}</h4>
+    <h4 className="sec" style={{ marginTop: 18 }}>{t('Add a night’s sleep')}</h4>
     <Row icon="sunrise" title={t('Woke up on')}>
       <input type="date" className="timef" value={date} max={todayISO()} onChange={e => setDate(e.target.value)} />
     </Row>
