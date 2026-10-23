@@ -154,6 +154,8 @@ const P = {
   hourglass: <path d="M6.8 3.8h10.4M6.8 20.2h10.4M8 3.8v2.6c0 2.2 4 3.6 4 5.6s-4 3.4-4 5.6v2.6M16 3.8v2.6c0 2.2-4 3.6-4 5.6s4 3.4 4 5.6v2.6" />,
   // effort per set (RIR / RPE)
   gauge: <><path d="M4.2 16.6a8 8 0 1 1 15.6 0" /><path d="m12 14.4 3.6-4.6" /><circle cx="12" cy="14.6" r="1.2" /></>,
+  // voice logging: the tap-to-talk mic on the workout header
+  mic: <><rect x="9.1" y="3.6" width="5.8" height="10.6" rx="2.9" /><path d="M6.1 11.6a5.9 5.9 0 0 0 11.8 0M12 17.5v2.9M9.1 20.4h5.8" /></>,
   // don't count for progression, and a deload routine (pause is only for pausing)
   chartLineSlash: <><path d="M3.6 20.2V4.4M3.6 20.2h16.8M6.4 16.4l3.9-4.8 3.1 2.7 5.2-6.6" /><path d="M4.6 4.6 19.8 19.8" /></>,
   // warm-up (flame is the streak only)

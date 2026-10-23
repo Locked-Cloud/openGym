@@ -2339,5 +2339,17 @@ export default {
   'No meets logged yet.': 'अभी कोई प्रतियोगिता दर्ज नहीं है।',
   'Total: {0} kg': 'टोटल: {0} किलो',
   '{0} meet logged': '{0} प्रतियोगिता दर्ज हुई',
-  '{0} meets logged': '{0} प्रतियोगिताएं दर्ज हुईं'
+  '{0} meets logged': '{0} प्रतियोगिताएं दर्ज हुईं',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'आवाज़ से दर्ज करें',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'वर्कआउट हेडर के माइक पर टैप करें और एक सेट बोलें, जैसे “100 पर 5 रेप्स”। यह आपके ब्राउज़र की स्पीच सेवा से चलता है; समझी गई वैल्यू के अलावा कुछ भी सेव नहीं होता।',
+  'Listening…': 'सुन रहा हूँ…',
+  'Stop listening': 'सुनना रोकें',
+  'Microphone access was denied.': 'माइक्रोफोन की अनुमति नहीं मिली।',
+  'Didn’t hear anything': 'कुछ सुनाई नहीं दिया',
+  'Didn’t catch that': 'समझ नहीं आया',
+  'Voice recognition is unavailable right now.': 'वॉइस रिकग्निशन अभी उपलब्ध नहीं है।',
+  'Nothing left to log': 'दर्ज करने को कुछ बचा नहीं',
+  'Nothing left to tick': 'टिक करने को कुछ बचा नहीं',
+  '{0} reps': '{0} रेप्स'
 }

@@ -1500,7 +1500,19 @@ export const PT_BR_OVERRIDES = {
   'No meets logged yet.': 'Ainda não há competições registradas.',
   'Total: {0} kg': 'Total: {0} kg',
   '{0} meet logged': '{0} competição registrada',
-  '{0} meets logged': '{0} competições registradas'
+  '{0} meets logged': '{0} competições registradas',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'Registrar por voz',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'Toque no microfone do cabeçalho do treino e fale uma série, p. ex. “5 repetições a 100”. Passa pelo serviço de voz do seu navegador; nada é salvo além dos valores interpretados.',
+  'Listening…': 'Ouvindo…',
+  'Stop listening': 'Parar de ouvir',
+  'Microphone access was denied.': 'O acesso ao microfone foi negado.',
+  'Didn’t hear anything': 'Não ouvi nada',
+  'Didn’t catch that': 'Não entendi',
+  'Voice recognition is unavailable right now.': 'O reconhecimento de voz não está disponível agora.',
+  'Nothing left to log': 'Nada mais para registrar',
+  'Nothing left to tick': 'Nada mais para marcar',
+  '{0} reps': '{0} repetições'
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

@@ -2394,5 +2394,17 @@ export default {
   'No meets logged yet.': 'لم تُسجَّل بطولات بعد.',
   'Total: {0} kg': 'المجموع: {0} كجم',
   '{0} meet logged': 'بطولة واحدة مسجّلة: {0}',
-  '{0} meets logged': '{0} بطولات مسجّلة'
+  '{0} meets logged': '{0} بطولات مسجّلة',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'التسجيل بالصوت',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'اضغط على الميكروفون في شريط التمرين وقل مجموعة مثلًا: «5 تكرارات بوزن 100». يمر عبر خدمة الصوت في متصفحك؛ ولا يُخزَّن شيء سوى القيم المفهومة.',
+  'Listening…': 'أستمع…',
+  'Stop listening': 'إيقاف الاستماع',
+  'Microphone access was denied.': 'تم رفض الوصول إلى الميكروفون.',
+  'Didn’t hear anything': 'لم يُسمع أي شيء',
+  'Didn’t catch that': 'لم أفهم ذلك',
+  'Voice recognition is unavailable right now.': 'التعرف على الصوت غير متاح الآن.',
+  'Nothing left to log': 'لا يوجد ما يمكن تسجيله',
+  'Nothing left to tick': 'لا يوجد ما يمكن تحديده',
+  '{0} reps': '{0} تكرارات'
 }

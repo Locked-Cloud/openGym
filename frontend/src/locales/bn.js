@@ -2418,5 +2418,17 @@ export default {
   'No meets logged yet.': 'এখনো কোনো প্রতিযোগিতা লগ হয়নি।',
   'Total: {0} kg': 'মোট: {0} কেজি',
   '{0} meet logged': '{0}টি প্রতিযোগিতা লগ হয়েছে',
-  '{0} meets logged': '{0}টি প্রতিযোগিতা লগ হয়েছে'
+  '{0} meets logged': '{0}টি প্রতিযোগিতা লগ হয়েছে',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'ভয়েসে লগ করুন',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'ওয়ার্কআউট হেডারের মাইকে ট্যাপ করে একটি সেট বলুন, যেমন “১০০-এ ৫ রেপ”। এটি আপনার ব্রাউজারের স্পিচ সার্ভিস দিয়ে চলে; বোঝা মানগুলো ছাড়া কিছুই জমা হয় না।',
+  'Listening…': 'শুনছি…',
+  'Stop listening': 'শোনা বন্ধ করুন',
+  'Microphone access was denied.': 'মাইক্রোফোনের অনুমতি দেওয়া হয়নি।',
+  'Didn’t hear anything': 'কিছুই শোনা যায়নি',
+  'Didn’t catch that': 'বুঝতে পারিনি',
+  'Voice recognition is unavailable right now.': 'ভয়েস রিকগনিশন এখন পাওয়া যাচ্ছে না।',
+  'Nothing left to log': 'লগ করার আর কিছু নেই',
+  'Nothing left to tick': 'টিক দেওয়ার আর কিছু নেই',
+  '{0} reps': '{0} রেপ'
 }

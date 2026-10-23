@@ -2339,5 +2339,17 @@ export default {
   'No meets logged yet.': '还没有记录比赛。',
   'Total: {0} kg': '总成绩：{0} kg',
   '{0} meet logged': '已记录 {0} 场比赛',
-  '{0} meets logged': '已记录 {0} 场比赛'
+  '{0} meets logged': '已记录 {0} 场比赛',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': '语音记录',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': '点击训练顶栏的麦克风并说出一个组合，例如“100 公斤 5 次”。通过浏览器的语音服务运行；除解析出的数值外不存储任何内容。',
+  'Listening…': '正在聆听…',
+  'Stop listening': '停止聆听',
+  'Microphone access was denied.': '麦克风访问被拒绝。',
+  'Didn’t hear anything': '没有听到内容',
+  'Didn’t catch that': '没有听清',
+  'Voice recognition is unavailable right now.': '语音识别当前不可用。',
+  'Nothing left to log': '没有可记录的内容',
+  'Nothing left to tick': '没有可勾选的内容',
+  '{0} reps': '{0} 次'
 }

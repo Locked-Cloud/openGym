@@ -2339,5 +2339,17 @@ export default {
   'No meets logged yet.': '기록된 대회가 아직 없습니다.',
   'Total: {0} kg': '토탈: {0} kg',
   '{0} meet logged': '대회 {0}개 기록됨',
-  '{0} meets logged': '대회 {0}개 기록됨'
+  '{0} meets logged': '대회 {0}개 기록됨',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': '음성으로 기록',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': '운동 화면 상단의 마이크를 누르고 세트를 말하세요. 예: “100으로 5회”. 브라우저의 음성 서비스를 거쳐 실행되며, 해석된 값 외에는 아무것도 저장되지 않습니다.',
+  'Listening…': '듣고 있습니다…',
+  'Stop listening': '듣기 중지',
+  'Microphone access was denied.': '마이크 권한이 거부되었습니다.',
+  'Didn’t hear anything': '아무 소리도 들리지 않았어요',
+  'Didn’t catch that': '알아듣지 못했어요',
+  'Voice recognition is unavailable right now.': '음성 인식을 지금 사용할 수 없습니다.',
+  'Nothing left to log': '기록할 것이 없습니다',
+  'Nothing left to tick': '체크할 것이 없습니다',
+  '{0} reps': '{0}회'
 }

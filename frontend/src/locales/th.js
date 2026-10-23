@@ -2350,5 +2350,17 @@ export default {
   'No meets logged yet.': 'ยังไม่มีการบันทึกการแข่งขัน',
   'Total: {0} kg': 'โททัล: {0} กก.',
   '{0} meet logged': 'บันทึกแล้ว {0} การแข่งขัน',
-  '{0} meets logged': 'บันทึกแล้ว {0} การแข่งขัน'
+  '{0} meets logged': 'บันทึกแล้ว {0} การแข่งขัน',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'บันทึกด้วยเสียง',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'แตะไมค์ที่ส่วนหัวของหน้าการฝึกแล้วพูดเซต เช่น “5 ครั้งที่ 100” ทำงานผ่านบริการเสียงของเบราว์เซอร์ ไม่มีการเก็บอะไรนอกจากค่าที่แปลงได้',
+  'Listening…': 'กำลังฟัง…',
+  'Stop listening': 'หยุดฟัง',
+  'Microphone access was denied.': 'ไม่ได้รับอนุญาตให้ใช้ไมค์',
+  'Didn’t hear anything': 'ไม่ได้ยินอะไรเลย',
+  'Didn’t catch that': 'ฟังไม่ทราบ',
+  'Voice recognition is unavailable right now.': 'การจำแนกเสียงใช้ไม่ได้ในตอนนี้',
+  'Nothing left to log': 'ไม่มีอะไรให้บันทึกแล้ว',
+  'Nothing left to tick': 'ไม่มีอะไรให้ทำเครื่องหมายแล้ว',
+  '{0} reps': '{0} ครั้ง'
 }

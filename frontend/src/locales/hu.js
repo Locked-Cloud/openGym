@@ -2342,5 +2342,17 @@ export default {
   'No meets logged yet.': 'Még nincs rögzített verseny.',
   'Total: {0} kg': 'Összeg: {0} kg',
   '{0} meet logged': '{0} verseny rögzítve',
-  '{0} meets logged': '{0} verseny rögzítve'
+  '{0} meets logged': '{0} verseny rögzítve',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'Hangalapú rögzítés',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'Érintsd meg a mikrofont az edzés fejlécében, és mondj egy sorozatot, pl. „5 ismétlés 100-mal”. A böngésződ beszédszolgáltatásán fut; a felismert értékeken kívül semmi nem tárolódik.',
+  'Listening…': 'Hallgat…',
+  'Stop listening': 'Figyelés leállítása',
+  'Microphone access was denied.': 'A mikrofon-hozzáférés elutasítva.',
+  'Didn’t hear anything': 'Semmit sem hallottam',
+  'Didn’t catch that': 'Nem értettem',
+  'Voice recognition is unavailable right now.': 'A beszédfelismerés most nem érhető el.',
+  'Nothing left to log': 'Nincs több rögzítenivaló',
+  'Nothing left to tick': 'Nincs több kipipálnivaló',
+  '{0} reps': '{0} ismétlés'
 }

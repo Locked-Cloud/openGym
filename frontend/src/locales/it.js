@@ -2339,5 +2339,17 @@ export default {
   'No meets logged yet.': 'Nessuna gara registrata.',
   'Total: {0} kg': 'Totale: {0} kg',
   '{0} meet logged': '{0} gara registrata',
-  '{0} meets logged': '{0} gare registrate'
+  '{0} meets logged': '{0} gare registrate',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'Registrare a voce',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'Tocca il microfono nella barra dell’allenamento e detta una serie, es. «5 ripetizioni a 100». Passa dal servizio vocale del tuo browser; non viene salvato nulla oltre ai valori interpretati.',
+  'Listening…': 'In ascolto…',
+  'Stop listening': 'Smetti di ascoltare',
+  'Microphone access was denied.': 'L’accesso al microfono è stato negato.',
+  'Didn’t hear anything': 'Non ho sentito nulla',
+  'Didn’t catch that': 'Non ho capito',
+  'Voice recognition is unavailable right now.': 'Il riconoscimento vocale non è disponibile in questo momento.',
+  'Nothing left to log': 'Niente da registrare',
+  'Nothing left to tick': 'Niente da spuntare',
+  '{0} reps': '{0} ripetizioni'
 }

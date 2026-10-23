@@ -2332,5 +2332,17 @@ export default {
   'No meets logged yet.': '還沒有記錄比賽。',
   'Total: {0} kg': '總成績：{0} kg',
   '{0} meet logged': '已記錄 {0} 場比賽',
-  '{0} meets logged': '已記錄 {0} 場比賽'
+  '{0} meets logged': '已記錄 {0} 場比賽',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': '語音記錄',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': '點按訓練頂欄的麥克風並說出一組，例如「100 公斤 5 次」。透過瀏覽器的語音服務執行；除解析出的數值外不儲存任何內容。',
+  'Listening…': '正在聆聽…',
+  'Stop listening': '停止聆聽',
+  'Microphone access was denied.': '麥克風存取被拒絕。',
+  'Didn’t hear anything': '沒有聽到內容',
+  'Didn’t catch that': '沒有聽清楚',
+  'Voice recognition is unavailable right now.': '語音辨識目前無法使用。',
+  'Nothing left to log': '沒有可記錄的內容',
+  'Nothing left to tick': '沒有可勾選的內容',
+  '{0} reps': '{0} 下'
 }

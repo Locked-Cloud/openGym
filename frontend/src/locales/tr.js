@@ -2339,5 +2339,17 @@ export default {
   'No meets logged yet.': 'Henüz kaydedilmiş yarışma yok.',
   'Total: {0} kg': 'Total: {0} kg',
   '{0} meet logged': '{0} yarışma kaydedildi',
-  '{0} meets logged': '{0} yarışma kaydedildi'
+  '{0} meets logged': '{0} yarışma kaydedildi',
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'Sesle kaydet',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'Antrenman başlığındaki mikrofona dokun ve bir set söyle, örn. “100 ile 5 tekrar”. Tarayıcının konuşma servisi üzerinden çalışır; çözümlenen değerlerden başkası saklanmaz.',
+  'Listening…': 'Dinliyor…',
+  'Stop listening': 'Dinlemeyi durdur',
+  'Microphone access was denied.': 'Mikrofon erişimi reddedildi.',
+  'Didn’t hear anything': 'Hiçbir şey duyulmadı',
+  'Didn’t catch that': 'Anlayamadım',
+  'Voice recognition is unavailable right now.': 'Konuşma tanıma şu anda kullanılamıyor.',
+  'Nothing left to log': 'Kaydedecek bir şey kalmadı',
+  'Nothing left to tick': 'İşaretleyecek bir şey kalmadı',
+  '{0} reps': '{0} tekrar'
 }

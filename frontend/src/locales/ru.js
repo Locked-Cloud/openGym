@@ -2343,5 +2343,17 @@ export default {
   'No meets logged yet.': 'Соревнований пока не записано.',
   'Total: {0} kg': 'Сумма: {0} кг',
   '{0} meet logged': 'Записано {0} соревнование',
-  '{0} meets logged': { one: 'Записано {0} соревнование', few: 'Записано {0} соревнования', many: 'Записано {0} соревнований' }
+  '{0} meets logged': { one: 'Записано {0} соревнование', few: 'Записано {0} соревнования', many: 'Записано {0} соревнований' },
+  // --- voice logging (lib/voice-log.js) ---,
+  'Log by voice': 'Голосовой ввод',
+  'Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.': 'Нажмите на микрофон в шапке тренировки и скажите подход, например «5 повторений со 100». Обработка идёт через речевой сервис вашего браузера; ничего не сохраняется, кроме распознанных значений.',
+  'Listening…': 'Слушаю…',
+  'Stop listening': 'Остановить прослушивание',
+  'Microphone access was denied.': 'Доступ к микрофону запрещён.',
+  'Didn’t hear anything': 'Ничего не слышно',
+  'Didn’t catch that': 'Не удалось распознать',
+  'Voice recognition is unavailable right now.': 'Распознавание речи сейчас недоступно.',
+  'Nothing left to log': 'Нечего записывать',
+  'Nothing left to tick': 'Нечего отмечать',
+  '{0} reps': 'Повторений: {0}'
 }
