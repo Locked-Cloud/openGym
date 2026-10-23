@@ -107,10 +107,13 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <!-- Gym check-in: scanning a membership QR/barcode with the camera. -->
     <uses-permission android:name="android.permission.CAMERA" />
-    <!-- Health Connect (#200): write-only, asked for only when the user turns it on in Settings.
-         openGym writes finished workouts and weigh-ins and reads nothing back. -->
+    <!-- Health Connect (#200): the write permissions are asked for only when the user turns it
+         on in Settings; openGym writes finished workouts and weigh-ins. The sleep-read
+         permission beside them belongs to the readiness card on Home: asked for only from that
+         card's Refresh, it reads the sleep sessions other apps wrote and nothing else. -->
     <uses-permission android:name="android.permission.health.WRITE_EXERCISE" />
     <uses-permission android:name="android.permission.health.WRITE_WEIGHT" />
+    <uses-permission android:name="android.permission.health.READ_SLEEP" />
 
     <!-- Whether the Health Connect app is there, on Android 13 and lower. -->
     <queries>

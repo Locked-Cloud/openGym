@@ -39,6 +39,9 @@
  *   - powerlifting: the maxes and rules of S.powerlifting field by field as below, its meets
  *     unioned by id and each field of a meet both copies have from the side that changed it
  *     last, then newest first and capped again (mergePowerlifting)
+ *   - readiness: the sleep nights of S.readiness (lib/readiness.js) unioned by id, and of a
+ *     night both copies have, each field from the side that changed it last, then newest first
+ *     and capped again (mergeReadiness) — the meets' rule exactly
  *   - bodyweight, measurements: union by day, the later-edited (`t`) entry of a day that both have
  *   - favEx: ordered set union, the newer copy first
  *   - exWeights: union by exercise, the better `w` for that exercise — larger for an ordinary
@@ -90,6 +93,7 @@ import { convertStateUnit, convertBodyWeight } from './units.js'
 import { sanitizeAccent } from './accent.js'
 import { readDayNote as readNote } from './day-notes.js'
 import { ROUTINE_HISTORY_CAP } from './routine-history.js'
+import { SLEEPS_CAP } from './readiness.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
@@ -473,6 +477,32 @@ export function mergePowerlifting(np, op, prefer) {
   return out
 }
 
+// The sleep nights of the readiness module, newest first and capped again as the store caps them.
+const byNightDateDesc = (a, b) => String(b?.date || '').localeCompare(String(a?.date || ''))
+const capSleeps = xs => xs.sort(byNightDateDesc).slice(0, SLEEPS_CAP)
+
+/**
+ * The sleep-based readiness nights (lib/readiness.js), S.readiness = { sleeps: [...] }: the
+ * nights of both copies unioned by id, and of an id both have, each field from the side that
+ * changed it last (`_f`, stampEntry / mergeEntry) — the meets' rule. A night is never deleted,
+ * only corrected (re-imported, re-entered), so there is no `deleted` record for it; it falls off
+ * the end of the capped list instead. With `prefer` the preferred side's nights stand as they
+ * are and only the union adds the other's (the preferred copy's version of a shared id), as
+ * mergePowerlifting does. A malformed value (no map, a `sleeps` that is not a list) reads as
+ * none, and the union is sorted and capped as the store keeps it.
+ */
+export function mergeReadiness(nr, or, prefer) {
+  const n = isMap(nr) ? nr : {}, o = isMap(or) ? or : {}
+  const out = clone(n)
+  const other = new Map(list(o.sleeps).filter(x => x?.id != null).map(x => [x.id, x]))
+  out.sleeps = unionById(list(n.sleeps), list(o.sleeps)).map(x => {
+    const alt = !prefer && x?.id != null ? other.get(x.id) : null
+    return alt ? mergeEntry(x, alt) : clone(x)
+  })
+  out.sleeps = capSleeps(out.sleeps)
+  return out
+}
+
 const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 const unitStamp = S => Number(S?.unitSet?.at) || 0
 
@@ -705,7 +735,7 @@ function applyDeletions(S, deleted) {
 // merge of their own are not stamped here; a field nobody stamped follows the newer copy, as before.
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
-  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'constraints', 'routineHistory', 'powerlifting',
+  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'constraints', 'routineHistory', 'powerlifting', 'readiness',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
@@ -922,6 +952,10 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   // The powerlifting module (lib/powerlifting.js) merges under its own key the same way the
   // constraints do: maxes/rules field by field, meets unioned by id (mergePowerlifting).
   if (isMap(n.powerlifting) || isMap(o.powerlifting)) out.powerlifting = mergePowerlifting(n.powerlifting, o.powerlifting, prefer)
+  // The sleep nights of the readiness module (lib/readiness.js) merge under their own key the
+  // same way the meets do: union by id, each field of a night both copies have from the side
+  // that changed it last (mergeReadiness).
+  if (isMap(n.readiness) || isMap(o.readiness)) out.readiness = mergeReadiness(n.readiness, o.readiness, prefer)
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)
@@ -1129,6 +1163,14 @@ export function highestStamp(S) {
       if (isMap(x._f)) for (const v of Object.values(x._f)) see(v)
     }
   }
+  // The readiness nights sit inside S.readiness.sleeps (lib/readiness.js) — unwrapped the same way.
+  if (isMap(S.readiness)) {
+    for (const x of list(S.readiness.sleeps)) {
+      if (!x || typeof x !== 'object') continue
+      see(x._ts)
+      if (isMap(x._f)) for (const v of Object.values(x._f)) see(v)
+    }
+  }
   for (const f of STAMPED_MAPS) if (isMap(S[f])) for (const v of Object.values(S[f])) see(stampOf(v))
   for (const e of [...list(S.bodyweight), ...list(S.measurements)]) if (e && typeof e === 'object') see(e.t)
   return m
@@ -1199,6 +1241,12 @@ export function stampChange(prev, next, wall = Date.now()) {
       if (!old || !sameEntry(old, x)) stampEntry(old, x, now)
     }
     stampEntries(list(was.meets), list(next.powerlifting.meets), now)
+  }
+  // The readiness nights (lib/readiness.js) stamp like the meets: a night this change imported
+  // afresh or corrected takes the change's own `_ts`/`_f`, the stamps mergeReadiness reads on
+  // another device — so a night corrected on one phone survives a pull made on the other.
+  if (isMap(next.readiness)) {
+    stampEntries(list(isMap(prev?.readiness) ? prev.readiness.sleeps : null), list(next.readiness.sleeps), now)
   }
   stampDeletions(prev, next, now)
   stampEdits(prev, next, now)
