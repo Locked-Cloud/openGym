@@ -5,6 +5,7 @@ import { useUI } from '../store/useUI.js'
 import { exOr, EXIDX } from '../lib/exercises.js'
 import { activeConstraints, validateRoutine } from '../lib/constraints.js'
 import { constraintsSheet, constraintSubstitutesSheet, constraintReason, CONSTRAINT_LEVEL_LABEL } from '../components/ConstraintsSheet.jsx'
+import { routineHistorySheet } from '../components/RoutineHistorySheet.jsx'
 import { activeProfile, exAvailable } from '../lib/equipment.js'
 import { uid, exerciseNameText } from '../lib/format.js'
 import { t, exerciseNameFor, exerciseNameClass } from '../lib/i18n.js'
@@ -640,6 +641,8 @@ export default function RoutineEdit() {
     }}>{t('Copy routine')}</Button>
     <div style={{ height: 10 }} />
     <Button disabled={!r.ex.length} onClick={printRoutine}>{t('Print / Save as PDF')}</Button>
+    <div style={{ height: 10 }} />
+    <Button icon="history" onClick={() => routineHistorySheet(id)}>{t('Version history')}</Button>
     <div style={{ height: 10 }} />
     <Button variant="danger" onClick={() => confirmSheet({
       title: t('Delete routine?'), message: t('“{0}” and its exercises will be removed.', r.name), confirmText: t('Delete'), danger: true,

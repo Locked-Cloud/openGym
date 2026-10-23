@@ -1,12 +1,13 @@
 import { create } from 'zustand'
 import { api, setRemoteAuth } from '../lib/api.js'
-import { localTZ, todayISO } from '../lib/format.js'
+import { localTZ, todayISO, isoOf, fmtDate } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
 import { emptyConstraints, addConstraint as addConstraintItem, updateConstraint as updateConstraintItem, resolveConstraint as resolveConstraintItem } from '../lib/constraints.js'
+import { snapshotRoutine, routineChanged, restoreVersion } from '../lib/routine-history.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
 import { initHealthSync, syncHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
@@ -242,6 +243,10 @@ export const DEF = {
   // A constraint is resolved, never deleted, and merges across devices by its own per-entry
   // `_ts`/`_f` stamps the way a custom exercise does (lib/sync-merge.js mergeConstraints).
   constraints: emptyConstraints(),
+  // A routine's version history (lib/routine-history.js), for the change that builds on this
+  // one: { [routineId]: [{ id, ts, label, routine }, …] }, append-only and merged by version id
+  // (lib/sync-merge.js mergeRoutineHistory). Declared here so every overlay path has the key.
+  routineHistory: {},
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -308,6 +313,35 @@ export function restoredStateFor(local, remote, dirty = false) {
   const next = sanitizeAccent(Object.assign(clone(DEF), remote))
   if (local.active) next.active = local.active
   return next
+}
+
+// The date a version label carries (lib/routine-history.js): the app's short date, with the year
+// whenever it is not this one — a version list spans months, and last year's "4 Mar" must say so.
+const histDay = (ts = Date.now()) => {
+  const iso = isoOf(new Date(ts))
+  return fmtDate(iso, false, iso.slice(0, 4) !== todayISO().slice(0, 4))
+}
+
+/* Routine version history, the automatic half (lib/routine-history.js): a change through update()
+   that materially changed what a routine says stores the state it replaced as a version first, so
+   the editor's Version history can walk an edit back. update() is the one path every routine edit
+   saves through — the editor has no Save button, each field writes at once — which also rules out
+   everything else by construction: a routine the change added has nothing to return to (its first
+   save), one it removed has its history taken by the removal itself (lib/routines.js
+   deleteRoutine), and an edit that left the routine canonically the same stores nothing
+   (snapshotRoutine dedupes it against the latest version and hands back the same map). A merge
+   from another device never passes through here; that device snapshotted at its own save. */
+const snapshotRoutineEdits = (prev, S) => {
+  const before = Array.isArray(prev?.routines) ? prev.routines : []
+  if (!before.length || !Array.isArray(S?.routines)) return
+  const nextById = new Map(S.routines.map(r => [r?.id, r]))
+  for (const r of before) {
+    if (r?.id == null) continue
+    const next = nextById.get(r.id)
+    if (!next || !routineChanged(r, next)) continue
+    const withV = snapshotRoutine(S.routineHistory, r.id, r, t('Before edit {0}', histDay()), Date.now())
+    if (withV !== S.routineHistory) S.routineHistory = withV
+  }
 }
 
 export const useStore = create((set, get) => {
@@ -1329,6 +1363,10 @@ export const useStore = create((set, get) => {
       const prev = get().S
       const S = clone(prev)
       mut(S)
+      // What the change is about to replace in a routine is a version before it goes (see
+      // snapshotRoutineEdits above) — before stampChange, so the history this adds is part of the
+      // same change the stamps and the push describe.
+      snapshotRoutineEdits(prev, S)
       // What the change removed, and which routines, workouts, settings and plan days it touched,
       // each with one time that comes after every stamp the copy already carries: a conflict then
       // keeps a removal and the edit made last, even from a device whose clock runs behind
@@ -1372,6 +1410,41 @@ export const useStore = create((set, get) => {
     },
     resolveConstraintAction(id) {
       get().update(S => { S.constraints = { items: resolveConstraintItem(S.constraints.items, id, todayISO()) } })
+    },
+    // A routine's own version history, the by-hand half (lib/routine-history.js); update() takes
+    // one on every material edit and restoreRoutineVersion takes its own before restoring, so a
+    // caller reaches for this only to pin a point by name ("Deload week"). False, with nothing
+    // written, when there is no such routine or its latest version already says the same thing.
+    snapshotRoutineVersion(rid, label) {
+      const S = get().S
+      const routine = (S.routines || []).find(r => r?.id === rid)
+      if (!routine) return false
+      const next = snapshotRoutine(S.routineHistory, rid, routine, label || t('Before edit {0}', histDay()), Date.now())
+      if (next === S.routineHistory) return false
+      get().update(draft => { draft.routineHistory = next })
+      return true
+    },
+    // Walk a routine back to a stored version. The state the editor is leaving is snapshotted
+    // first ("Before restore …"), so a restore lands in the same list and is itself reversible;
+    // the restored routine then goes through update(), with the stamps, persistence and sync any
+    // edit gets — including a fresh `_ts`, without which a merge would keep the routine that was
+    // edited last rather than this deliberate walk-back. True when nothing needed doing (what is
+    // on screen already says what the version does); false when the version or the routine is
+    // not there any more, with nothing written.
+    restoreRoutineVersion(rid, versionId) {
+      const S = get().S
+      const cur = (S.routines || []).find(r => r?.id === rid)
+      const found = cur && restoreVersion(S.routineHistory, rid, versionId)
+      if (!found) return false
+      if (!routineChanged(cur, found.routine)) return true
+      get().update(draft => {
+        const at = draft.routines.findIndex(r => r?.id === rid)
+        if (at < 0) return
+        const withV = snapshotRoutine(draft.routineHistory, rid, draft.routines[at], t('Before restore {0}', histDay()), Date.now())
+        if (withV !== draft.routineHistory) draft.routineHistory = withV
+        draft.routines[at] = found.routine
+      })
+      return true
     },
     // Settings → unit. `convert` walks every stored weight into the new unit (lib/units.js); off,
     // only the label changes. Either way the choice is stamped (`unitSet`), so a merge with a

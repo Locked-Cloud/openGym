@@ -2287,5 +2287,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': '전문가 검토',
   'Exercises named outright': '이름으로 직접 지정한 운동',
-  '“{0}” added': '“{0}” 추가됨'
+  '“{0}” added': '“{0}” 추가됨',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': '편집 전 {0}',
+  'Before restore {0}': '복원 전 {0}',
+  'Version history': '버전 기록',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': '이 계획이 바뀔 때마다 대체된 버전을 남겨요, 최신 것이 먼저예요. 아무거나 복원할 수 있어요 — 지금 화면에 있는 내용은 먼저 버전으로 저장돼요.',
+  'No versions yet. One is kept every time the plan changes.': '아직 버전이 없어요. 계획이 바뀔 때마다 하나씩 저장돼요.',
+  'Restore this version?': '이 버전을 복원할까요?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': '계획이 {0} 당시 모습으로 돌아가요. 지금 있는 내용은 먼저 버전으로 저장되니 같은 방식으로 되돌릴 수 있어요.',
+  'Restore': '복원',
+  'Version restored': '버전을 복원했어요',
+  'That version is no longer available': '그 버전은 더 이상 없어요'
 }

@@ -33,6 +33,9 @@
  *     edited last for every field neither side stamped. A constraint is resolved, never deleted
  *     (lib/constraints.js has no removal), so there is no `deleted` record for it — resolution is
  *     the removal story
+ *   - routineHistory: key union; of a routine both have, its version lists unioned by version id —
+ *     append-only, so the same id is the same version and kept once — then oldest first and capped
+ *     again as the module stores them (ROUTINE_HISTORY_CAP, lib/routine-history.js)
  *   - bodyweight, measurements: union by day, the later-edited (`t`) entry of a day that both have
  *   - favEx: ordered set union, the newer copy first
  *   - exWeights: union by exercise, the better `w` for that exercise — larger for an ordinary
@@ -83,6 +86,7 @@ import { bestWeightForEntry } from './history.js'
 import { convertStateUnit, convertBodyWeight } from './units.js'
 import { sanitizeAccent } from './accent.js'
 import { readDayNote as readNote } from './day-notes.js'
+import { ROUTINE_HISTORY_CAP } from './routine-history.js'
 
 const clone = o => JSON.parse(JSON.stringify(o))
 const list = v => (Array.isArray(v) ? v : [])
@@ -407,6 +411,28 @@ export function mergeConstraints(nc, oc, prefer) {
   return out
 }
 
+/**
+ * The version history of the routines (lib/routine-history.js), S.routineHistory =
+ * { [routineId]: [{ id, ts, label, routine }, …] }: every routine's versions from both copies
+ * unioned by version id — a version is append-only, so the same id is the same version by
+ * construction and kept once — sorted oldest first as the module stores them and capped again
+ * (ROUTINE_HISTORY_CAP), because the union of two capped lists can outgrow it. A routine only one
+ * copy has a history for keeps it as it is; a malformed value (no map, a list that is not one)
+ * reads as none.
+ */
+export function mergeRoutineHistory(nh, oh) {
+  const n = isMap(nh) ? nh : {}, o = isMap(oh) ? oh : {}
+  const out = {}
+  for (const id of new Set([...Object.keys(n), ...Object.keys(o)])) {
+    const vs = unionById(list(n[id]), list(o[id]))
+      .sort((x, y) => (Number(x?.ts) || 0) - (Number(y?.ts) || 0))
+      .slice(-ROUTINE_HISTORY_CAP)
+      .map(clone)
+    if (vs.length) out[id] = vs
+  }
+  return out
+}
+
 const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 const unitStamp = S => Number(S?.unitSet?.at) || 0
 
@@ -639,7 +665,7 @@ function applyDeletions(S, deleted) {
 // merge of their own are not stamped here; a field nobody stamped follows the newer copy, as before.
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
-  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'constraints',
+  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'constraints', 'routineHistory',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
@@ -850,6 +876,9 @@ export function mergeStates(a0, b0, { prefer } = {}) {
   // (mergeConstraints). A constraint is never removed, only resolved, so no `deleted` record
   // applies to it.
   if (isMap(n.constraints) || isMap(o.constraints)) out.constraints = mergeConstraints(n.constraints, o.constraints, prefer)
+  // A routine's version history (lib/routine-history.js) is append-only: both copies' versions of a
+  // routine union by version id, oldest first, capped as the module caps them (mergeRoutineHistory).
+  if (isMap(n.routineHistory) || isMap(o.routineHistory)) out.routineHistory = mergeRoutineHistory(n.routineHistory, o.routineHistory)
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)

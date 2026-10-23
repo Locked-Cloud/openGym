@@ -2290,5 +2290,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'Szakemberi vélemény',
   'Exercises named outright': 'Név szerint említett gyakorlatok',
-  '“{0}” added': '„{0}” hozzáadva'
+  '“{0}” added': '„{0}” hozzáadva',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'Szerkesztés előtt {0}',
+  'Before restore {0}': 'Visszaállítás előtt {0}',
+  'Version history': 'Verziótörténet',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'Ennek a tervnek minden módosítása megőrzi a felváltott verziót, mindig a legújabb előre. Állíts vissza bármelyiket — ami most a képernyőn van, előbb verzióként menti el a rendszer.',
+  'No versions yet. One is kept every time the plan changes.': 'Még nincs verzió. Minden tervmódosításnál elmentődik egy.',
+  'Restore this version?': 'Visszaállítod ezt a verziót?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'A terv visszaáll arra az állapotra, amilyen {0} volt. Amit most tartalmaz, előbb verzióként menti el a rendszer, így ugyanígy visszavonható.',
+  'Restore': 'Visszaállítás',
+  'Version restored': 'Verzió visszaállítva',
+  'That version is no longer available': 'Ez a verzió már nem elérhető'
 }

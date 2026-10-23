@@ -2287,5 +2287,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': '专业评估',
   'Exercises named outright': '直接点名的动作',
-  '“{0}” added': '已添加“{0}”'
+  '“{0}” added': '已添加“{0}”',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': '编辑前 {0}',
+  'Before restore {0}': '恢复前 {0}',
+  'Version history': '版本历史',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': '这份计划的每次修改都会保留被替换的版本，最新的在最前。你可以恢复其中任何一个——当前屏幕上的内容会先保存为一个版本。',
+  'No versions yet. One is kept every time the plan changes.': '还没有版本。计划每次变化时都会保留一个。',
+  'Restore this version?': '恢复此版本？',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': '计划会回到 {0} 时的样子。当前内容会先保存为一个版本，因此同样可以撤销。',
+  'Restore': '恢复',
+  'Version restored': '版本已恢复',
+  'That version is no longer available': '该版本已不存在'
 }

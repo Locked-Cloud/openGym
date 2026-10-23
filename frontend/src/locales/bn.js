@@ -2366,5 +2366,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'পেশাদার পর্যালোচনা',
   'Exercises named outright': 'নাম ধরে উল্লেখ করা ব্যায়াম',
-  '“{0}” added': '“{0}” যোগ হয়েছে'
+  '“{0}” added': '“{0}” যোগ হয়েছে',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'সম্পাদনার আগে {0}',
+  'Before restore {0}': 'পুনরুদ্ধারের আগে {0}',
+  'Version history': 'সংস্করণ ইতিহাস',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'এই প্ল্যানের প্রতিটি পরিবর্তন যে সংস্করণটি প্রতিস্থাপন করেছে সেটি রেখে দেয়, নতুনটা আগে। এর যেকোনো একটি পুনরুদ্ধার করতে পারেন — এখন স্ক্রিনে যা আছে তা আগে একটি সংস্করণ হিসেবে সংরক্ষিত হয়।',
+  'No versions yet. One is kept every time the plan changes.': 'এখনো কোনো সংস্করণ নেই। প্ল্যান বদলানোর প্রতিবার একটি সংস্করণ রাখা হয়।',
+  'Restore this version?': 'এই সংস্করণটি পুনরুদ্ধার করবেন?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'প্ল্যানটি {0} তারিখে যেমন ছিল তেমনই ফিরে যাবে। এতে এখন যা আছে তা আগে একটি সংস্করণ হিসেবে সংরক্ষিত হয়, তাই একইভাবে আগের অবস্থায় ফেরানো যাবে।',
+  'Restore': 'পুনরুদ্ধার করুন',
+  'Version restored': 'সংস্করণ পুনরুদ্ধার হয়েছে',
+  'That version is no longer available': 'সেই সংস্করণটি আর পাওয়া যাচ্ছে না'
 }

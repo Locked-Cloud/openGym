@@ -2287,5 +2287,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'Profesyonel inceleme',
   'Exercises named outright': 'Doğrudan adı geçen egzersizler',
-  '“{0}” added': '“{0}” eklendi'
+  '“{0}” added': '“{0}” eklendi',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'Düzenlemeden önce {0}',
+  'Before restore {0}': 'Geri yüklemeden önce {0}',
+  'Version history': 'Sürüm geçmişi',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'Bu planda yapılan her değişiklik yerine koyduğu sürümü saklar, en yeni önce. İstediğini geri yükleyebilirsin — şu an ekranda olan önce bir sürüm olarak kaydedilir.',
+  'No versions yet. One is kept every time the plan changes.': 'Henüz sürüm yok. Plan her değiştiğinde bir tane saklanır.',
+  'Restore this version?': 'Bu sürüm geri yüklensin mi?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'Plan, {0} tarihindeki haline döner. Şu an yazan şey önce bir sürüm olarak kaydedilir, böylece aynı yolla geri alınabilir.',
+  'Restore': 'Geri yükle',
+  'Version restored': 'Sürüm geri yüklendi',
+  'That version is no longer available': 'O sürüm artık yok'
 }

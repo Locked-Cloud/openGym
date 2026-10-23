@@ -2280,5 +2280,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': '專業評估',
   'Exercises named outright': '直接點名的動作',
-  '“{0}” added': '已新增「{0}」'
+  '“{0}” added': '已新增「{0}」',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': '編輯前 {0}',
+  'Before restore {0}': '還原前 {0}',
+  'Version history': '版本歷史紀錄',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': '這份計畫的每次修改都會保留被取代的版本，最新的在最前面。你可以還原其中任何一個——目前畫面上的內容會先儲存為一個版本。',
+  'No versions yet. One is kept every time the plan changes.': '還沒有版本。計畫每次變更時都會保留一個。',
+  'Restore this version?': '還原此版本？',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': '計畫會回到 {0} 時的樣子。目前的內容會先儲存為一個版本，因此同樣可以復原。',
+  'Restore': '還原',
+  'Version restored': '版本已還原',
+  'That version is no longer available': '該版本已不存在'
 }

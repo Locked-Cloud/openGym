@@ -2287,5 +2287,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'Avis professionnel',
   'Exercises named outright': 'Exercices nommés explicitement',
-  '“{0}” added': '« {0} » ajouté'
+  '“{0}” added': '« {0} » ajouté',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'Avant la modification du {0}',
+  'Before restore {0}': 'Avant la restauration du {0}',
+  'Version history': 'Historique des versions',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'Chaque changement de ce plan conserve la version qu’il a remplacée, la plus récente d’abord. Restaure celle que tu veux — ce qui est affiché pour l’instant est d’abord enregistré comme version.',
+  'No versions yet. One is kept every time the plan changes.': 'Pas encore de versions. Une est conservée à chaque changement du plan.',
+  'Restore this version?': 'Restaurer cette version ?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'Le plan revient à son état du {0}. Ce qu’il dit actuellement est d’abord enregistré comme version, pour pouvoir être annulé de la même façon.',
+  'Restore': 'Restaurer',
+  'Version restored': 'Version restaurée',
+  'That version is no longer available': 'Cette version n’est plus disponible'
 }

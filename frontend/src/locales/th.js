@@ -2298,5 +2298,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'การตรวจทานโดยผู้เชี่ยวชาญ',
   'Exercises named outright': 'ท่าที่ระบุชื่อตรง ๆ',
-  '“{0}” added': 'เพิ่ม “{0}” แล้ว'
+  '“{0}” added': 'เพิ่ม “{0}” แล้ว',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'ก่อนแก้ไข {0}',
+  'Before restore {0}': 'ก่อนกู้คืน {0}',
+  'Version history': 'ประวัติเวอร์ชัน',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'ทุกครั้งที่แผนนี้เปลี่ยน ระบบจะเก็บเวอร์ชันที่ถูกแทนที่ไว้ โดยใหม่สุดมาก่อน กู้คืนได้ทุกเวอร์ชัน — สิ่งที่แสดงอยู่ตอนนี้จะถูกบันทึกเป็นเวอร์ชันก่อน',
+  'No versions yet. One is kept every time the plan changes.': 'ยังไม่มีเวอร์ชัน จะมีการเก็บไว้หนึ่งเวอร์ชันทุกครั้งที่แผนเปลี่ยน',
+  'Restore this version?': 'กู้คืนเวอร์ชันนี้?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'แผนจะกลับไปเป็นแบบที่เป็นเมื่อ {0} สิ่งที่แผนบอกอยู่ตอนนี้จะถูกบันทึกเป็นเวอร์ชันก่อน จึงย้อนกลับด้วยวิธีเดียวกันนี้ได้',
+  'Restore': 'กู้คืน',
+  'Version restored': 'กู้คืนเวอร์ชันแล้ว',
+  'That version is no longer available': 'เวอร์ชันนั้นไม่มีอีกต่อไป'
 }

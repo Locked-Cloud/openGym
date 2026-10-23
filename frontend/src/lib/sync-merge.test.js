@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { highestStamp, stampChange, keepReset, localExtras, mergeDeletions, stampDeletions, stampEdits, mergeBodyweight, mergeResetIds, mergeStampedMap, mergeStates, newerOf, resetIdsOf, RESET_ID_MAX, sinceReset, stampCustomEx, stampRoutines, stampWorkout, unionById } from './sync-merge.js'
 import { mergeImport } from './import-csv.js'
+import { ROUTINE_HISTORY_CAP } from './routine-history.js'
 import { convertBodyWeight, convertStateUnit, convertWeight } from './units.js'
 import { retimeWorkout } from './workout-date.js'
 import { inventoryFor, loadKindFor, withLoadKind, withPlatePairs, withStandardPlates } from './plates.js'
@@ -541,6 +542,65 @@ describe('constraints keep the version edited last, field by field', () => {
   })
 })
 
+// The version history of a routine's own definition (lib/routine-history.js): every version is
+// append-only and named by its id, so a merge is a union by id, oldest first, capped again.
+describe('routine history unions by version id', () => {
+  const v = (id, ts, label = id) => ({ id, ts, label, routine: { id: 'r', name: label, ex: [] } })
+
+  it('the same version id is kept once, different ids both, interleaved oldest first', () => {
+    const A = base({ _ts: 100, routineHistory: { push: [v('v1', 10), v('v2', 30)] } })
+    const B = base({ _ts: 200, routineHistory: { push: [v('v1', 10), v('v3', 20)], pull: [v('p1', 5)] } })
+    for (const m of [mergeStates(A, B), mergeStates(B, A)]) {
+      expect(m.routineHistory.push.map(x => x.id)).toEqual(['v1', 'v3', 'v2'])
+      expect(m.routineHistory.push.map(x => x.ts)).toEqual([10, 20, 30])
+      expect(m.routineHistory.pull).toEqual([v('p1', 5)])   // a routine one side only, as it is
+    }
+  })
+
+  it('re-applies the module\'s cap to the union: the newest ROUTINE_HISTORY_CAP stay', () => {
+    const many = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => v('v' + (from + i), from + i))
+    const A = base({ _ts: 100, routineHistory: { push: many(1, 20) } })
+    const B = base({ _ts: 200, routineHistory: { push: many(11, 30) } })   // v11–v20 on both, 30 in the union
+    const m = mergeStates(A, B)
+    expect(m.routineHistory.push).toHaveLength(ROUTINE_HISTORY_CAP)
+    expect(m.routineHistory.push.map(x => x.ts)).toEqual(Array.from({ length: ROUTINE_HISTORY_CAP }, (_, i) => i + 11))
+    expect(m.routineHistory.push.at(-1).id).toBe('v30')
+  })
+
+  it('a copy without the key (an old client) keeps the other\'s history; a malformed value reads as none', () => {
+    const A = base({ _ts: 100, routineHistory: { push: [v('v1', 10)] } })
+    const old = base({ _ts: 200 })
+    for (const m of [mergeStates(A, old), mergeStates(old, A)]) expect(m.routineHistory).toEqual({ push: [v('v1', 10)] })
+    expect(mergeStates(base({ _ts: 1 }), base({ _ts: 2 })).routineHistory).toBeUndefined()
+    const junk = base({ _ts: 50, routineHistory: { push: 'junk', pull: null } })
+    expect(mergeStates(A, junk).routineHistory).toEqual({ push: [v('v1', 10)] })
+    expect(mergeStates(junk, base({ _ts: 1 })).routineHistory).toEqual({})
+    // junk on the newer side, with nothing to merge against: passed through, as unknown keys are
+    expect(mergeStates(base({ _ts: 2, routineHistory: 'oops' }), base({ _ts: 1 })).routineHistory).toBe('oops')
+  })
+
+  it('the merged history is a copy, not the input', () => {
+    const A = base({ _ts: 100, routineHistory: { push: [v('v1', 10)] } })
+    const m = mergeStates(A, base({ _ts: 50 }))
+    m.routineHistory.push[0].label = 'changed'
+    expect(A.routineHistory.push[0].label).toBe('v1')
+  })
+
+  it('the new keys change nothing else: a merge without them comes out the same', () => {
+    const a = base({ _ts: 200, restSec: 120, workouts: [workout('w1')], routines: [routine('r1', 'A')], customEx: [{ id: 'c1', n: 'x' }], favEx: ['x'] })
+    const b = base({ _ts: 100, restSec: 60, week: { 1: ['r1'] }, workouts: [workout('w2', '2026-09-02')] })
+    const plain = mergeStates(a, b)
+    const added = mergeStates({ ...a, constraints: { items: [{ id: 'c9' }] }, routineHistory: { r1: [v('v9', 9)] } }, b)
+    expect(plain.constraints).toBeUndefined()
+    expect(plain.routineHistory).toBeUndefined()
+    expect(added.restSec).toBe(plain.restSec)
+    expect(ids(added.workouts)).toEqual(ids(plain.workouts))
+    expect(ids(added.routines)).toEqual(ids(plain.routines))
+    expect(added.customEx).toEqual(plain.customEx)
+    expect(added.week).toEqual(plain.week)
+    expect(added.favEx).toEqual(plain.favEx)
+  })
+})
 
 
 // QA, v1.3.9 (t9): a copy converted to lb met the other device's kg copy, and the merge compared

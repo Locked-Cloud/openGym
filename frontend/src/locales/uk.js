@@ -2284,5 +2284,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'Погляд фахівця',
   'Exercises named outright': 'Вправи, названі прямо',
-  '“{0}” added': '«{0}» додано'
+  '“{0}” added': '«{0}» додано',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'Перед зміною {0}',
+  'Before restore {0}': 'Перед відновленням {0}',
+  'Version history': 'Історія версій',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'Кожна зміна цього плану зберігає версію, яку вона замінила, — найновіші йдуть першими. Відновіть будь-яку з них — те, що зараз на екрані, спершу збережеться як версія.',
+  'No versions yet. One is kept every time the plan changes.': 'Версій ще немає. Одна зберігається при кожній зміні плану.',
+  'Restore this version?': 'Відновити цю версію?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'План повернеться до того, яким він був {0}. Те, що в ньому зараз, спершу збережеться як версія, щоб це можна було скасувати так само.',
+  'Restore': 'Відновити',
+  'Version restored': 'Версію відновлено',
+  'That version is no longer available': 'Цієї версії більше немає'
 }

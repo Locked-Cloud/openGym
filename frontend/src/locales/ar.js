@@ -2342,5 +2342,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'مراجعة مختص',
   'Exercises named outright': 'تمارين مذكورة بأسمائها',
-  '“{0}” added': 'تمت إضافة «{0}»'
+  '“{0}” added': 'تمت إضافة «{0}»',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'قبل التعديل {0}',
+  'Before restore {0}': 'قبل الاستعادة {0}',
+  'Version history': 'سجل الإصدارات',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'كل تعديل على هذه الخطة يحتفظ بالإصدار الذي حلّ محله، الأحدث أولًا. استعد أيًّا منها — ما هو على الشاشة الآن يُحفَظ أولًا كإصدار.',
+  'No versions yet. One is kept every time the plan changes.': 'لا إصدارات بعد. يُحفَظ واحد في كل مرة تتغير فيها الخطة.',
+  'Restore this version?': 'استعادة هذا الإصدار؟',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'تعود الخطة إلى ما كانت عليه بتاريخ {0}. ما هي عليه الآن يُحفَظ أولًا كإصدار، حتى يمكن التراجع عن ذلك بالطريقة نفسها.',
+  'Restore': 'استعادة',
+  'Version restored': 'تمت استعادة الإصدار',
+  'That version is no longer available': 'هذا الإصدار لم يعد متاحًا'
 }

@@ -2287,5 +2287,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'पेशेवर समीक्षा',
   'Exercises named outright': 'नाम से बताए गए व्यायाम',
-  '“{0}” added': '“{0}” जोड़ा गया'
+  '“{0}” added': '“{0}” जोड़ा गया',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'संपादन से पहले {0}',
+  'Before restore {0}': 'बहाल करने से पहले {0}',
+  'Version history': 'संस्करण इतिहास',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'इस योजना में हर बदलाव जिस संस्करण की जगह लेता है उसे रख देता है, नया सबसे पहले। किसी भी एक को बहाल करें — अभी स्क्रीन पर जो है वह पहले एक संस्करण के रूप में सहेजा जाता है।',
+  'No versions yet. One is kept every time the plan changes.': 'अभी कोई संस्करण नहीं है। योजना बदलने पर हर बार एक रखा जाता है।',
+  'Restore this version?': 'यह संस्करण बहाल करें?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'योजना {0} की स्थिति में वापस चली जाती है। उसमें अभी जो लिखा है वह पहले एक संस्करण के रूप में सहेजा जाता है, ताकि इसे उसी तरह वापस लिया जा सके।',
+  'Restore': 'बहाल करें',
+  'Version restored': 'संस्करण बहाल हुआ',
+  'That version is no longer available': 'वह संस्करण अब उपलब्ध नहीं है'
 }

@@ -1448,7 +1448,18 @@ export const PT_BR_OVERRIDES = {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'Revisão profissional',
   'Exercises named outright': 'Exercícios citados diretamente',
-  '“{0}” added': '“{0}” adicionado'
+  '“{0}” added': '“{0}” adicionado',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'Antes da edição de {0}',
+  'Before restore {0}': 'Antes da restauração de {0}',
+  'Version history': 'Histórico de versões',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'Cada mudança neste plano guarda a versão que substituiu, a mais recente primeiro. Restaure qualquer uma delas — o que está na tela agora é salvo primeiro como uma versão.',
+  'No versions yet. One is kept every time the plan changes.': 'Ainda não há versões. Uma é guardada cada vez que o plano muda.',
+  'Restore this version?': 'Restaurar esta versão?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'O plano volta ao que era em {0}. O que ele diz agora é salvo primeiro como uma versão, então dá para desfazer do mesmo jeito.',
+  'Restore': 'Restaurar',
+  'Version restored': 'Versão restaurada',
+  'That version is no longer available': 'Essa versão não está mais disponível'
 }
 
 export default { ...pt, ...PT_BR_OVERRIDES }

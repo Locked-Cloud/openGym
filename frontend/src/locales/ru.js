@@ -2291,5 +2291,16 @@ export default {
   // --- constraint picker (components/ConstraintsSheet.jsx) ---,
   'Professional review': 'Взгляд специалиста',
   'Exercises named outright': 'Упражнения, названные напрямую',
-  '“{0}” added': '«{0}» добавлено'
+  '“{0}” added': '«{0}» добавлено',
+  // --- routine version history (lib/routine-history.js) ---,
+  'Before edit {0}': 'Перед изменением {0}',
+  'Before restore {0}': 'Перед восстановлением {0}',
+  'Version history': 'История версий',
+  'Every change to this plan keeps the version it replaced, newest first. Restore any of them — what is on screen now is saved as a version first.': 'Каждое изменение этого плана сохраняет версию, которую оно заменило, новейшие в начале списка. Восстановите любую из них — то, что сейчас на экране, сначала сохранится как версия.',
+  'No versions yet. One is kept every time the plan changes.': 'Версий пока нет. Одна сохраняется при каждом изменении плана.',
+  'Restore this version?': 'Восстановить эту версию?',
+  'The plan goes back to how it was on {0}. What it says now is saved as a version first, so this can be undone the same way.': 'План вернётся к тому, каким он был {0}. То, что в нём сейчас, сначала сохранится как версия, поэтому это можно отменить так же.',
+  'Restore': 'Восстановить',
+  'Version restored': 'Версия восстановлена',
+  'That version is no longer available': 'Этой версии больше нет'
 }
