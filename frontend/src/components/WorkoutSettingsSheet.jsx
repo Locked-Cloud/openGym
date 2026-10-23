@@ -4,6 +4,7 @@ import { t } from '../lib/i18n.js'
 import { effortOf } from '../lib/history.js'
 import { workoutControls } from '../lib/workout-controls.js'
 import { unlock, vibrateSupported, appleTouchDevice } from '../lib/sound.js'
+import { speechSupported } from '../lib/voice-speech.js'
 import { wakeLockSupported } from '../lib/wakelock.js'
 import { MOBILE } from '../lib/mobile.js'
 import { closeThenNav } from '../lib/nav.js'
@@ -70,6 +71,13 @@ export function WorkoutSettings({ close }) {
         <Switch aria-label={t('Swipe actions')} checked={workoutControls(S).swipeSets}
           onChange={v => update(s => { s.wc = { ...workoutControls(s), swipeSets: v } })} />
       </Row>
+      {/* Off by default, and hidden entirely where the browser has no speech recognition —
+          the same capability gate as the Vibrate and Keep-awake rows above. */}
+      {speechSupported() && <Row icon="mic" iconTint="var(--green)" title={t('Log by voice')}
+        subtitle={t('Tap the mic on the workout header and say a set, e.g. “5 reps at 100”. Runs through your browser’s speech service; nothing is stored beyond the parsed values.')}>
+        <Switch aria-label={t('Log by voice')} checked={workoutControls(S).voiceLog === true}
+          onChange={v => update(s => { s.wc = { ...workoutControls(s), voiceLog: v } })} />
+      </Row>}
       <Row icon="image" iconTint="var(--teal)" title={t('Exercise animations')}>
         <Segmented className="seg-inline"
           options={[{ value: 'full', label: t('Full') }, { value: 'mini', label: t('Small') }, { value: 'off', label: t('Hidden') }]}

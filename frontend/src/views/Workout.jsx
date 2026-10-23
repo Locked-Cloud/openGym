@@ -43,6 +43,8 @@ import { bestSetFor } from '../lib/exercise-history.js'
 import { isWarmupRow, isFailureSet, toggleFailure, isDropSet, isRestPauseSet, dropsOf, clustersOf, addDrop, addCluster, removeDropAt, removeClusterAt, setDropAt, setClusterAt, nextDropWeight, nextBurstReps, isSideSet, makeSideSet, setSideField, toggleSide, addSideDrop, removeSideDropAt, setSideDropAt, addSideCluster, removeSideClusterAt, setSideClusterAt, WEIGHT_ORIGIN_MANUAL } from '../lib/workout-model.js'
 import { canMoveActiveWorkoutUnit, moveActiveWorkoutUnit, canMoveActiveWorkoutEntry, moveActiveWorkoutEntry } from '../lib/active-workout-order.js'
 import { nextOpenSet, workoutKeyAction } from '../lib/workout-keys.js'
+import { convertWeight } from '../lib/units.js'
+import VoiceLog from '../components/VoiceLog.jsx'
 import { MUSCLE_NAME } from '../lib/muscles.js'
 import FocusView from './FocusView.jsx'
 import { withMeaning, historyAs, dbLoadFor, entryDbLoad, bellsIn, ownedWeightsFor, stepOwned } from '../lib/dumbbells.js'
@@ -1741,6 +1743,103 @@ function ActiveWorkout() {
     }
   }
 
+  // Voice logging (the header mic, Settings → Workout settings → Log by voice): the parsed
+  // actions of one utterance apply to the set the hardware keys would tick — the next open set
+  // of the current unit (nextOpenSet), so every layout lands on the same row — and through the
+  // same handlers a tap uses: setField for values, toggle for done (rest and flow advance ride
+  // along), startRest for a spoken rest, navigateUnit for "next". Field writes never tick the
+  // set: unlike the effort picker (one value concludes the set), voice is a batch writer and
+  // "done" is its own word — an auto-tick here would make the next "done" tick the set AFTER.
+  // Returns the localized confirmation the mic chip shows.
+  const applyVoice = actions => {
+    const parts = []
+    const openSet = () => {
+      const A2 = useStore.getState().S.active
+      return A2 ? nextOpenSet(A2.entries, A2.cur) : null
+    }
+    let at = openSet()
+    for (const a of actions) {
+      if (a.type === 'done') {
+        // A hold being timed: this is its "Done", exactly like the hardware key.
+        if (work) { useUI.getState().finishWorkEarly(); parts.push(t('Hold logged')); continue }
+        if (!at) { parts.push(t('Nothing left to tick')); continue }
+        const n = setNumberAt(useStore.getState().S.active.entries[at.idx].sets, at.i)
+        toggle(at.idx, at.i, at.side)
+        at = openSet()
+        parts.push(t('Set {0} done', n))
+        continue
+      }
+      if (a.type === 'fail') {
+        if (!at) { parts.push(t('Nothing left to log')); continue }
+        const entry = useStore.getState().S.active.entries[at.idx]
+        const rows = entry.sets
+        // The same toggle the set menu's row applies: both halves of a timed L/R pair, warm-ups
+        // excepted (a warm-up is never taken to failure).
+        if (!isWarmupRow(rows[at.i])) update(s => {
+          const e = s.active.entries[at.idx]
+          const [start, count] = setSpanAt(e.sets, at.i)
+          for (let j = start; j < start + count; j++) if (!isFailureSet(e.sets[j])) e.sets[j] = toggleFailure(e.sets[j])
+        }, true)
+        parts.push(t('Taken to failure'))
+        continue
+      }
+      if (a.type === 'rest') {
+        startRest(a.seconds, at?.idx)
+        parts.push(t('{0} rest', fmtRest(a.seconds)))
+        continue
+      }
+      if (a.type === 'next') {
+        navigateUnit(1)
+        showCurrent()
+        parts.push(t('Next'))
+        continue
+      }
+      // reps / weight / rir / rpe onto the open set
+      if (!at) { parts.push(t('Nothing left to log')); continue }
+      const live = useStore.getState().S.active.entries[at.idx]
+      if (!live?.sets?.[at.i]) { parts.push(t('Nothing left to log')); continue }
+      // reps and effort only exist on a reps set; a weight on reps and timed holds, never cardio
+      const m = modeAt(at.idx)
+      const noField = (a.type === 'reps' || a.type === 'rir' || a.type === 'rpe') && m !== 'reps'
+        || a.type === 'weight' && m === 'cardio'
+      if (noField) { parts.push(t('Nothing left to log')); continue }
+      if (a.type === 'rir' || a.type === 'rpe') {
+        // RIR and RPE read the same effort off two scales; write in the profile's scale so the
+        // row's picker shows what was said (10 − x flips between them, as the effort colour
+        // does). A profile logging no effort keeps the value in the scale it was said in.
+        const kind = effortOf(S)
+        const field = kind === 'rir' || kind === 'rpe' ? kind : a.type
+        const v = kind === 'none' || kind === a.type ? a.value : 10 - a.value
+        if (isSideSet(live.sets[at.i])) mutEntry(at.idx, e => {
+          for (const side of ['L', 'R']) e.sets[at.i] = setSideField(e.sets[at.i], side, field, v)
+        })
+        else setField(at.idx, at.i, field, v)
+        parts.push(t(field === 'rpe' ? 'RPE {0}' : 'RIR {0}', fmtNum(v)))
+        continue
+      }
+      // a weight said in the other unit is converted the way the profile switch converts
+      const v = a.type === 'weight' && a.unit && a.unit !== S.unit ? convertWeight(a.value, a.unit, S.unit) : a.value
+      if (isSideSet(live.sets[at.i])) {
+        // a unilateral set logs each limb on its own: say it on both sides, the way two taps would
+        if (a.type === 'weight') update(s => {
+          const e = s.active.entries[at.idx]
+          let row = e.sets[at.i]
+          for (const side of ['L', 'R']) {
+            row = setSideField(row, side, 'w', v)
+            row.sides[side].weightOrigin = WEIGHT_ORIGIN_MANUAL
+          }
+          e.sets[at.i] = row
+          for (const side of ['L', 'R']) e.sets = cascadeWeight(e.sets, at.i, v, side, e.target?.backoffStep)
+        }, true)
+        else mutEntry(at.idx, e => {
+          for (const side of ['L', 'R']) e.sets[at.i] = setSideField(e.sets[at.i], side, 'r', v)
+        })
+      } else setField(at.idx, at.i, a.type === 'weight' ? 'w' : 'r', v)
+      parts.push(a.type === 'weight' ? `${fmtNum(v)} ${S.unit}` : t('{0} reps', fmtNum(v)))
+    }
+    return parts.join(' · ')
+  }
+
   // After the finished exercise folded away (toggle, above): the new current one is the next thing
   // to do, so if it now sits under the header or low on the screen with little more than its title
   // showing, it glides up under the header. Where it is already in reach the page stays put. Run
@@ -1916,6 +2015,9 @@ function ActiveWorkout() {
         ? <button className="iconbtn" aria-label={t('Close editor')} title={t('Close editor')} onClick={() => exitWorkoutEdit()}><Icon name="xmark" /></button>
         : <button className="iconbtn" aria-label={t('Minimize')} title={t('Minimize')} onClick={() => nav('/home')}><Icon name="chevronDown" /></button>}
       <div className="whdr-mid"><div className="whdr-name">{A.name}</div><div className="sub">{(A.backfill || editing) ? fmtDate(A.d, true) : <Elapsed start={A.start} />} · {t('{0} sets', done + '/' + total)}</div></div>
+      {/* Tap-to-talk set logging (one utterance per tap; off until turned on in Workout
+          settings). In the header so Cards, List, Compact and Focus all carry it. */}
+      {wc.voiceLog && <VoiceLog onActions={applyVoice} />}
       <button className="iconbtn" aria-label={t('Workout options')} title={t('Workout options')} onClick={openViewMenu}><Icon name="more" /></button>
       <button className="btn primary pill whdr-finish" aria-label={editing ? t('Save changes') : undefined}
         onClick={() => (editing ? finishWorkout() : finishWorkoutSheet({ onDiscard: discardWorkout }))}>{editing ? t('Save') : t('Finish')}</button>

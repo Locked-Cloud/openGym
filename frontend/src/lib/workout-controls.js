@@ -12,6 +12,8 @@ export const WC_DEFAULT = Object.freeze({
                           // of fixed height that replaces the "Exercise 2 / 5" line in Cards and Focus
   swipeSets: true,        // swipe actions: a set row (start deletes with Undo, end copies) and, despite the
                           // name, Plan's routines, loop and routine exercises too (Settings: "Swipe actions")
+  voiceLog: false,        // the tap-to-talk mic on the workout header (Web Speech API; one utterance
+                          // per tap — off by default until the profile turns it on)
 })
 
 export function workoutControls(S) {
