@@ -475,6 +475,73 @@ describe('custom exercises keep the version edited last', () => {
   })
 })
 
+// The injury-aware training constraints (lib/constraints.js) live at S.constraints = { items } and
+// merge like any stamped list: union by id, each field from the side that changed it last. The lib
+// resolves a constraint instead of deleting it, so a removal record would never exist for one —
+// resolution is the deletion story.
+describe('constraints keep the version edited last, field by field', () => {
+  const con = (id, over = {}) => ({ id, label: id, bodyParts: [], muscles: [], exerciseIds: [], status: 'active', source: 'self', startedOn: null, resolvedOn: null, requiresReview: false, note: '', ...over })
+
+  it('a resolve on one device survives a note edited on the other, whichever copy is newer', () => {
+    const A = base({ _ts: 100, constraints: { items: [
+      con('c1', { status: 'resolved', resolvedOn: '2026-10-01', note: 'old note', _ts: 90, _f: { status: 90, resolvedOn: 90 } }),
+    ] } })
+    const B = base({ _ts: 200, constraints: { items: [
+      con('c1', { note: 'see a physio', _ts: 95, _f: { note: 95 } }),
+      con('c2', { label: 'Right knee' }),
+    ] } })
+    for (const m of [mergeStates(A, B), mergeStates(B, A)]) {
+      expect(m.constraints.items.map(c => c.id).sort()).toEqual(['c1', 'c2'])
+      const c1 = m.constraints.items.find(c => c.id === 'c1')
+      expect(c1.status).toBe('resolved')
+      expect(c1.resolvedOn).toBe('2026-10-01')
+      expect(c1.note).toBe('see a physio')
+      expect(m.constraints.items.find(c => c.id === 'c2').label).toBe('Right knee')
+    }
+  })
+
+  it('the same field edited on both: the later stamp wins; without stamps, the newer copy\'s', () => {
+    const A = base({ _ts: 100, constraints: { items: [con('c1', { label: 'Tennis elbow', _ts: 90, _f: { label: 90 } })] } })
+    const B = base({ _ts: 200, constraints: { items: [con('c1', { label: 'Golfer\'s elbow', _ts: 80, _f: { label: 80 } })] } })
+    expect(mergeStates(A, B).constraints.items[0].label).toBe('Tennis elbow')
+    expect(mergeStates(B, A).constraints.items[0].label).toBe('Tennis elbow')
+    const bareA = base({ _ts: 100, constraints: { items: [con('c1', { label: 'older' })] } })
+    const bareB = base({ _ts: 200, constraints: { items: [con('c1', { label: 'newer' })] } })
+    expect(mergeStates(bareA, bareB).constraints.items[0].label).toBe('newer')
+  })
+
+  it('a copy without the key (an old client) keeps the other\'s constraints, and neither invents one', () => {
+    const A = base({ _ts: 100, constraints: { items: [con('c1'), con('c2')] } })
+    const old = base({ _ts: 200 })
+    for (const m of [mergeStates(A, old), mergeStates(old, A)]) {
+      expect(m.constraints.items.map(c => c.id)).toEqual(['c1', 'c2'])
+    }
+    expect(mergeStates(base({ _ts: 1 }), base({ _ts: 2 })).constraints).toBeUndefined()
+  })
+
+  it('tolerates a malformed value: the readable side survives, nothing crashes', () => {
+    const A = base({ _ts: 100, constraints: { items: [con('c1')] } })
+    const nulls = base({ _ts: 200, constraints: null })
+    for (const m of [mergeStates(A, nulls), mergeStates(nulls, A)]) {
+      expect(m.constraints.items.map(c => c.id)).toEqual(['c1'])
+    }
+    const junk = base({ _ts: 50, constraints: { items: 'junk' } })
+    expect(mergeStates(A, junk).constraints.items.map(c => c.id)).toEqual(['c1'])
+    expect(mergeStates(junk, base({ _ts: 1 })).constraints).toEqual({ items: [] })
+    // junk on the newer side, with nothing to merge against: passed through, as unknown keys are
+    expect(mergeStates(base({ _ts: 2, constraints: 'oops' }), base({ _ts: 1 })).constraints).toBe('oops')
+  })
+
+  it('sign-in (prefer) keeps the preferred side\'s version as it is', () => {
+    const server = base({ _ts: 100, constraints: { items: [con('c1', { status: 'resolved', _ts: 10 })] } })
+    const device = base({ _ts: 50, constraints: { items: [con('c1', { note: 'edited', _ts: 99, _f: { note: 99 } }), con('c2')] } })
+    const m = mergeStates(server, device, { prefer: 'a' })
+    expect(m.constraints.items.map(c => c.id)).toEqual(['c1', 'c2'])
+    expect(m.constraints.items.find(c => c.id === 'c1')).toMatchObject({ status: 'resolved', note: '' })
+  })
+})
+
+
 
 // QA, v1.3.9 (t9): a copy converted to lb met the other device's kg copy, and the merge compared
 // the numbers as they were — the server ended in kg with lb numbers in it.

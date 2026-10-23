@@ -2,6 +2,7 @@ import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { useStore } from './store/useStore.js'
 import { useUI } from './store/useUI.js'
 import { EXDB, EXIDX, BODYPARTS, isCardio, isBodyweightEq, allExercises, equipmentOf, byCategory, smOf, searchExercises, similarExercises, exOr, isAssisted, betterWeight, beatsWeight, isCustomEx } from './lib/exercises.js'
+import { activeConstraints, validateRoutine } from './lib/constraints.js'
 import { activeProfile, exAvailable, ALL_EQUIPMENT, newProfile, profileEquipment, ACC_V } from './lib/equipment.js'
 import { fmtDate, fmtDateRange, fmtNum, fmtPlate, exerciseNameText, fmtVol, fmtDur, durPart, todayISO, isoOf, uid, exCount, routineCount, setsWorkCount, DAYN, DAYS, weekOrder, weekStartOf, weekDayOffset, MONTHS_LONG, ACCENTS } from './lib/format.js'
 import { lastEntryFor, bestWeightFor, bestWeightForEntry, buildSets, effectiveRoutineIds, workoutDay, workoutVolume, setsDone, setsDoneActive, setUnitsTotal, lastBW, sessionSections, setLabel, defaultConfig, cleanupSg, modeOf, effortOf, EFFORT, capEffort, stepEffort, isBw, isPerSide, sideReps, workSetsDone, applyIntensifierPlan, MAX_PLANNED_WARMUPS, NOTE_MAX } from './lib/history.js'
@@ -2767,11 +2768,45 @@ export function DayNoteRow({ iso, note }) {
 /* ============================ workout lifecycle ============================ */
 // `routineIds` accepts `string | string[] | null` — `[r.id]` for one routine,
 // `effectiveRoutineIds(...)` for today's planned session, `[]` / null for explicit freestyle.
+// A session whose routines an active constraint blocks or flags asks before it starts
+// (lib/constraints.js). The routine's own screen shows the same overlap while editing; this is
+// the last look on the way in, and it never blocks — "Start anyway" goes on exactly as before.
+// With no active constraint, the common case, one array read pays for the whole check.
+const constraintConflicts = (st, routineIds) => {
+  const items = st.constraints?.items
+  if (!activeConstraints(items).length) return []
+  const out = []
+  for (const rid of [].concat(routineIds || [])) {
+    const routine = st.routines.find(x => x.id === rid)
+    if (!routine) continue
+    for (const v of validateRoutine(routine, items, EXIDX)) {
+      if (v.verdict && v.verdict.level !== 'uncertain') out.push(v)
+    }
+  }
+  return out
+}
 export function startFlow(routineIds) {
-  // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
-  // into the session with no body weight on it, same as "Start without weighing in".
-  if (S().weighIn === false) { beginWorkout(routineIds, null); return }
-  bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+  const go = () => {
+    // The weigh-in is a setting (Settings → During a workout, issue #137): off goes straight
+    // into the session with no body weight on it, same as "Start without weighing in".
+    if (S().weighIn === false) { beginWorkout(routineIds, null); return }
+    bwSheet({ required: true, onDone: bw => beginWorkout(routineIds, bw) })
+  }
+  const conflicts = constraintConflicts(S(), routineIds)
+  if (conflicts.length) {
+    // One sentence, no plural split: the list itself shows how many there are, and a pack that
+    // has none of this feature's strings yet still reads right in English (the translations pass
+    // fills the key).
+    const list = conflicts.map(v => `${exerciseNameText(exOr(v.exId))} (${v.verdict.constraintLabel})`).join(' · ')
+    confirmSheet({
+      title: t('Train around a constraint?'),
+      message: t('Exercises in this session meet a training constraint: {0}. This is an overlap of names, not a judgement — you can start anyway.', list),
+      confirmText: t('Start anyway'),
+      onConfirm: go,
+    })
+    return
+  }
+  go()
 }
 export function beginWorkout(routineIds, bw) {
   const st = S()

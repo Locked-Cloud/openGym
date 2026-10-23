@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { api, setRemoteAuth } from '../lib/api.js'
-import { localTZ } from '../lib/format.js'
+import { localTZ, todayISO } from '../lib/format.js'
 import { t } from '../lib/i18n.js'
 import { registerCustom, healCustomEx } from '../lib/exercises.js'
 import { DEMO, DEMO_SEEDED } from '../lib/demo.js'
 import { rememberDefaultLang } from '../lib/default-lang.js'
 import { guestAllowed } from '../lib/guest.js'
+import { emptyConstraints, addConstraint as addConstraintItem, updateConstraint as updateConstraintItem, resolveConstraint as resolveConstraintItem } from '../lib/constraints.js'
 import { MOBILE, initReminderSync, nativeLoad, nativeSave, onAppActive, readJsonFile, syncReminder, writeAutoBackup, writeJsonFile } from '../lib/mobile.js'
 import { initHealthSync, syncHealth } from '../lib/health-sync.js'
 import { refillIfComplete } from '../lib/rotation.js'
@@ -237,6 +238,10 @@ export const DEF = {
   // cleared) replaces that role's curated exercise-id whitelist with a single user-chosen
   // exercise id; the stamp is what lets a sync keep the choice made last (lib/sync-merge.js).
   balanceTemplate: DEFAULT_TEMPLATE_ID, balanceOverrides: {},
+  // Injury-aware training constraints (lib/constraints.js): S.constraints = { items: [...] }.
+  // A constraint is resolved, never deleted, and merges across devices by its own per-entry
+  // `_ts`/`_f` stamps the way a custom exercise does (lib/sync-merge.js mergeConstraints).
+  constraints: emptyConstraints(),
 }
 const clone = o => JSON.parse(JSON.stringify(o))
 
@@ -1353,6 +1358,20 @@ export const useStore = create((set, get) => {
       let removed = false
       get().update(S => { removed = deleteEditedWorkout(S) })
       return removed
+    },
+    // Training constraints (lib/constraints.js): thin wrappers over the pure helpers, so every
+    // write rides the same update()/stampChange path as the rest of the profile — stampChange is
+    // what puts a changed constraint's own `_ts` and per-field `_f` on it, the stamps
+    // mergeConstraints reads on another device (lib/sync-merge.js). `resolveConstraintAction`
+    // carries the lib's name plus one, because the store already holds `updateConstraint`.
+    addConstraint(c) {
+      get().update(S => { S.constraints = { items: addConstraintItem(S.constraints.items, c) } })
+    },
+    updateConstraint(id, patch) {
+      get().update(S => { S.constraints = { items: updateConstraintItem(S.constraints.items, id, patch) } })
+    },
+    resolveConstraintAction(id) {
+      get().update(S => { S.constraints = { items: resolveConstraintItem(S.constraints.items, id, todayISO()) } })
     },
     // Settings → unit. `convert` walks every stored weight into the new unit (lib/units.js); off,
     // only the label changes. Either way the choice is stamped (`unitSet`), so a merge with a

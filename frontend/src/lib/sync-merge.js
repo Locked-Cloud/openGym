@@ -28,6 +28,11 @@
  *   - routines: union by id in the newer copy's order, a routine only the older copy has next to
  *     its neighbour there (unionByNeighbours); of an id that both have, the version
  *     edited last by its own `_ts` (stampRoutines), the newer copy's on a tie
+ *   - constraints: the `items` of S.constraints (lib/constraints.js) union by id, like customEx;
+ *     of an id that both have, each field from the side that changed it last (`_f`), the version
+ *     edited last for every field neither side stamped. A constraint is resolved, never deleted
+ *     (lib/constraints.js has no removal), so there is no `deleted` record for it — resolution is
+ *     the removal story
  *   - bodyweight, measurements: union by day, the later-edited (`t`) entry of a day that both have
  *   - favEx: ordered set union, the newer copy first
  *   - exWeights: union by exercise, the better `w` for that exercise — larger for an ordinary
@@ -379,6 +384,29 @@ export function mergeStampedMap(newer, older, prefer) {
   return out
 }
 
+/**
+ * The training constraints (lib/constraints.js), S.constraints = { items: [...] }: the items of
+ * both copies unioned by id, and of an id both have, each field from the side that changed it last
+ * (`_f`, stampEntry / mergeEntry) — the same rule a custom exercise follows, so a constraint
+ * resolved on one device survives a note edited on the other. Without stamps (an old client, an
+ * unstamped writer) the newer copy's item stays, as for any other entry. A constraint has no
+ * removal record to honour: the lib resolves instead of deleting, so resolution is the deletion
+ * story, and nothing here is dropped. A malformed value (no map, no `items` list) reads as none.
+ */
+export function mergeConstraints(nc, oc, prefer) {
+  const itemsOf = v => list(isMap(v) ? v.items : null)
+  const out = clone(isMap(nc) ? nc : {})
+  out.items = unionById(itemsOf(nc), itemsOf(oc)).map(clone)
+  if (!prefer) {
+    const other = new Map(itemsOf(oc).filter(x => x?.id != null).map(x => [x.id, x]))
+    out.items = out.items.map(x => {
+      const alt = x?.id != null && other.get(x.id)
+      return alt ? mergeEntry(x, alt) : x
+    })
+  }
+  return out
+}
+
 const unitOf = S => (S?.unit === 'lb' ? 'lb' : 'kg')
 const unitStamp = S => Number(S?.unitSet?.at) || 0
 
@@ -611,7 +639,7 @@ function applyDeletions(S, deleted) {
 // merge of their own are not stamped here; a field nobody stamped follows the newer copy, as before.
 const OWN_MERGE = new Set([
   '_ts', '_rev', '_wid', '_wids', '_unstamped', '_prior', 'active', 'unit', 'unitSet', 'resetAt', 'resetIds', 'deleted', 'edited', 'undone', 'routineOrder',
-  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx',
+  'workouts', 'routines', 'customEx', 'equipProfiles', 'gymCards', 'bodyweight', 'measurements', 'favEx', 'constraints',
   'exWeights', 'balanceOverrides', 'loadKind', 'plates', 'dbLoad', 'dumbbells', 'dayNotes',
 ])
 // Stamped per key instead of whole: one day of the plan, one exercise's note or bar.
@@ -817,6 +845,11 @@ export function mergeStates(a0, b0, { prefer } = {}) {
       })
     }
   }
+  // The training constraints (lib/constraints.js) sit inside their own `items` list, so they merge
+  // apart from the four above: union by id, and of an id both copies have, field by field as above
+  // (mergeConstraints). A constraint is never removed, only resolved, so no `deleted` record
+  // applies to it.
+  if (isMap(n.constraints) || isMap(o.constraints)) out.constraints = mergeConstraints(n.constraints, o.constraints, prefer)
   out.bodyweight = mergeBodyweight(n.bodyweight, o.bodyweight).map(clone)
   // A day's body measurements are one check-in, kept and merged the way a weigh-in is.
   if (list(n.measurements).length || list(o.measurements).length) out.measurements = mergeBodyweight(n.measurements, o.measurements).map(clone)
@@ -1008,6 +1041,13 @@ export function highestStamp(S) {
       if (isMap(x._f)) for (const v of Object.values(x._f)) see(v)
     }
   }
+  // The training constraints sit inside their own list (S.constraints.items), not a top-level
+  // array, so the loop above never sees them — unwrapped here for the same read.
+  for (const x of list(isMap(S.constraints) ? S.constraints.items : null)) {
+    if (!x || typeof x !== 'object') continue
+    see(x._ts)
+    if (isMap(x._f)) for (const v of Object.values(x._f)) see(v)
+  }
   for (const f of STAMPED_MAPS) if (isMap(S[f])) for (const v of Object.values(S[f])) see(stampOf(v))
   for (const e of [...list(S.bodyweight), ...list(S.measurements)]) if (e && typeof e === 'object') see(e.t)
   return m
@@ -1058,6 +1098,13 @@ export function stampChange(prev, next, wall = Date.now()) {
   stampCustomEx(prev?.customEx, next.customEx, now)
   stampEntries(prev?.equipProfiles, next.equipProfiles, now)
   stampEntries(prev?.gymCards, next.gymCards, now)
+  // A constraint this change added or edited is stamped like any other entry (stampEntry): its
+  // own `_ts` and, per field, `_f` — the stamps mergeConstraints reads, so the field this device
+  // changed last survives a conflict with an older copy of the same constraint. A copy with no
+  // `constraints` at all (an older client's, a test's bare state) invents nothing.
+  if (isMap(next.constraints)) {
+    stampEntries(list(isMap(prev?.constraints) ? prev.constraints.items : null), list(next.constraints.items), now)
+  }
   stampDeletions(prev, next, now)
   stampEdits(prev, next, now)
   return now
